@@ -2,7 +2,6 @@ package sms
 
 import (
 	domainsms "apartment-manager-backend/internal/domain/sms"
-	"context"
 	"fmt"
 	"os"
 	"time"
@@ -18,7 +17,7 @@ func NewFileSMS(path string) domainsms.SMSInterface {
 	}
 }
 
-func (s *fileSMS) SendOTP(ctx context.Context, phone string, code string) error {
+func (s *fileSMS) SendOTP(phone string, code string) error {
 	message := fmt.Sprintf("Time: %s | Phone: %s | OTP: %s\n",
 		time.Now().Format("2006-01-02 15:04:05"),
 		phone,
