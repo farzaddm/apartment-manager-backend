@@ -44,10 +44,19 @@ func (s *tokenService) generateToken(userID uuid.UUID, role string, secret strin
 }
 
 func (s *tokenService) ValidateToken(tokenString string) (*domainJwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	claims := jwt.MapClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
+
+		tokenType, _ := claims["token_type"].(string)
+
+		if tokenType == "refresh" {
+			return []byte(s.refreshSecret), nil
+		}
+
 		return []byte(s.accessSecret), nil
 	})
 
@@ -55,15 +64,15 @@ func (s *tokenService) ValidateToken(tokenString string) (*domainJwt.MapClaims, 
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userIDStr, _ := claims["user_id"].(string)
+	if claimsMap, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userIDStr, _ := claimsMap["user_id"].(string)
 		userID, _ := uuid.Parse(userIDStr)
 
 		return &domainJwt.MapClaims{
 			UserID:    userID,
-			Role:      claims["role"].(string),
-			TokenType: claims["token_type"].(string),
-			ExpiresAt: int64(claims["exp"].(float64)),
+			Role:      claimsMap["role"].(string),
+			TokenType: claimsMap["token_type"].(string),
+			ExpiresAt: int64(claimsMap["exp"].(float64)),
 		}, nil
 	}
 

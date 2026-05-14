@@ -4,9 +4,10 @@ import (
 	"apartment-manager-backend/config"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/internal/infrastructure/database"
+	"apartment-manager-backend/internal/infrastructure/jwt"
+	"apartment-manager-backend/internal/infrastructure/repository/postgres"
 	"net/http"
 
-	//"apartment-manager-backend/internal/infrastructure/repository/postgres"
 	"apartment-manager-backend/internal/infrastructure/repository/redis"
 	"apartment-manager-backend/internal/infrastructure/sms"
 	"apartment-manager-backend/internal/presentation/controller"
@@ -38,21 +39,26 @@ func main() {
 	}
 
 	// --- REPOSITORIES ---
-	//userRepo := postgres.NewUserRepository(db)
+	userRepo := postgres.NewUserRepository(db)
 	otpRepo := redis.NewOTPRepository(redisClient)
+	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
+	jwtRepo := jwt.NewTokenService(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
 
 	// --- SERVICES ---
 	SendOtpService := service.NewSendOtpService(otpRepo, smsService)
+	VerifyOtpServise := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
 
 	// --- CONTROLLER ---
 	SendOtpController := controller.NewAuthHandler(SendOtpService)
+	VerifyOtpController := controller.NewVerifyController(VerifyOtpServise)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
-		SendOTP: SendOtpController,
+		SendOTP:   SendOtpController,
+		VerifyOTP: VerifyOtpController,
 	}
 
 	r := routes.SetUpRouter(controllers)
