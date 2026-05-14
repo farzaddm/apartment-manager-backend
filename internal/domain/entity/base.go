@@ -8,8 +8,8 @@ import (
 )
 
 type BaseModel struct {
-	ID        uuid.UUID `gorm:"primaryKey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	ID        uuid.UUID      `gorm:"column:id;primaryKey;default:gen_random_uuid()"`
+	CreatedAt time.Time      `gorm:"column:created_at"`
+	UpdatedAt time.Time      `gorm:"column:updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
 }
