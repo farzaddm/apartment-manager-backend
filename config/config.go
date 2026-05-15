@@ -11,6 +11,7 @@ type Config struct {
 	App      AppConfig      `mapstructure:",squash"`
 	Postgres PostgresConfig `mapstructure:",squash"`
 	Redis    RedisConfig    `mapstructure:",squash"`
+	JWT      JWTConfig      `mapstructure:",squash"`
 }
 
 type AppConfig struct {
@@ -33,6 +34,13 @@ type RedisConfig struct {
 	Port     string `mapstructure:"REDIS_PORT"`
 	Password string `mapstructure:"REDIS_PASSWORD"`
 	DB       int    `mapstructure:"REDIS_DB"`
+}
+
+type JWTConfig struct {
+	AccessSecret        string `mapstructure:"JWT_ACCESS_SECRET"`
+	RefreshSecret       string `mapstructure:"JWT_REFRESH_SECRET"`
+	AccessExpireMinutes int    `mapstructure:"JWT_ACCESS_EXPIRE_MINUTES"`
+	RefreshExpireDays   int    `mapstructure:"JWT_REFRESH_EXPIRE_DAYS"`
 }
 
 func Load() (*Config, error) {

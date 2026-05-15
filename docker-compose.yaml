@@ -25,22 +25,22 @@ services:
       - backend
 
 
-  # redis:
-  #   image: redis:${REDIS_VERSION}
-  #   container_name: ${REDIS_CONTAINER}
-  #   restart: unless-stopped
-  #   command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-  #   ports:
-  #     - "${REDIS_PORT}:6379"
-  #   volumes:
-  #     - redis_data:/data
-  #   networks:
-  #     - backend
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
+  redis:
+     image: redis:${REDIS_VERSION}
+     container_name: ${REDIS_CONTAINER}
+     restart: unless-stopped
+     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+     ports:
+       - "${REDIS_PORT}:6379"
+     volumes:
+       - redis_data:/data
+     networks:
+       - backend
+     healthcheck:
+       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+       interval: 10s
+       timeout: 5s
+       retries: 5
 
 
   pgadmin:
@@ -63,7 +63,7 @@ services:
 
 volumes:
   pg_data:
-  # redis_data:
+  redis_data:
 
 
 networks:

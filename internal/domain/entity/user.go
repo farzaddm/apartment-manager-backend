@@ -1,29 +1,29 @@
 package entity
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type User struct {
 	BaseModel
 
-	ApartmentID uuid.UUID
+	ApartmentID *uuid.UUID `gorm:"column:apartment_id"`
 
-	FirstName string
-	LastName  string
+	FirstName string `gorm:"column:first_name"`
+	LastName  string `gorm:"column:last_name"`
 
-	Username string
-	Email    string
-	Phone    string
+	Username string `gorm:"column:username"`
+	Email    string `gorm:"column:email"`
+	Phone    string `gorm:"column:phone"`
 
-	Password string
+	Password string `gorm:"column:password"`
 
-	Role UserRole
+	Role   UserRole   `gorm:"column:role"`
+	Gender GenderType `gorm:"column:gender"`
 
-	Gender GenderType
+	ProfileImageURL string `gorm:"column:profile_image_url"`
 
-	ProfileImageURL string
-
-	Apartment Apartment
-
-	Tickets  []Ticket
-	Comments []Comment
+	Apartment *Apartment `gorm:"foreignKey:ApartmentID"`
+	Tickets   []Ticket   `gorm:"foreignKey:user_id"`
+	Comments  []Comment  `gorm:"foreignKey:user_id"`
 }
