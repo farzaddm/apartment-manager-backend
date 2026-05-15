@@ -5,7 +5,7 @@ import "github.com/google/uuid"
 type User struct {
 	BaseModel
 
-	ApartmentID uuid.UUID
+	ApartmentID *uuid.UUID
 
 	FirstName string
 	LastName  string

@@ -21,6 +21,7 @@ CREATE TYPE gender_type AS ENUM (
 
 CREATE TYPE ticket_status AS ENUM (
     'open',
+    'in-progress',
     'closed'
 );
 
@@ -54,8 +55,6 @@ CREATE TABLE apartments (
     address TEXT,
     postal_code VARCHAR(20),
 
-    unit_count INTEGER DEFAULT 0,
-
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ NULL DEFAULT NULL
@@ -69,7 +68,7 @@ CREATE TABLE apartments (
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    apartment_id UUID NOT NULL,
+    apartment_id UUID NULL,
 
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
@@ -95,6 +94,38 @@ CREATE TABLE users (
         REFERENCES apartments(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
+);
+
+-- =========================
+-- UNITS
+-- =========================
+
+CREATE TABLE units (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    apartment_id UUID NOT NULL,
+    user_id UUID NULL,
+
+
+    unit_number VARCHAR(50) NOT NULL,
+
+    floor INTEGER,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL DEFAULT NULL,
+
+    CONSTRAINT fk_units_apartment
+        FOREIGN KEY (apartment_id)
+        REFERENCES apartments(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE ,
+
+    CONSTRAINT fk_units_user
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE SET NULL 
+    ON UPDATE CASCADE
 );
 
 
@@ -138,11 +169,12 @@ CREATE TABLE comments (
     ticket_id UUID NOT NULL,
 
     body TEXT NOT NULL,
-    commited_order INTEGER DEFAULT 0,
+    committed_order INTEGER DEFAULT 0,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ NULL DEFAULT NULL,
+
 
     CONSTRAINT fk_comments_user
         FOREIGN KEY (user_id)
@@ -254,6 +286,7 @@ CREATE TABLE invite_codes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     apartment_id UUID NOT NULL,
+    unit_id UUID NOT NULL,
 
     code VARCHAR(64) UNIQUE NOT NULL,
 
@@ -266,6 +299,12 @@ CREATE TABLE invite_codes (
     CONSTRAINT fk_invite_codes_apartment
         FOREIGN KEY (apartment_id)
         REFERENCES apartments(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_invite_codes_unit
+        FOREIGN KEY (unit_id)
+        REFERENCES units(id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -405,6 +444,10 @@ BEFORE UPDATE ON ticket_announcement_tags
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_unit_updated_at
+BEFORE UPDATE ON units
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 -- +goose Down
 
 
@@ -429,6 +472,9 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS apartments CASCADE;
 
 DROP TABLE IF EXISTS ticket_announcement_tags CASCADE;
+
+DROP TABLE IF EXISTS units CASCADE;
+
 
 
 -- =========================================
