@@ -1,0 +1,6 @@
+-- +goose Up
+ALTER TABLE users ALTER COLUMN gender DROP NOT NULL;
+ALTER TABLE users ALTER COLUMN gender SET DEFAULT NULL;
+
+-- +goose Down
+ALTER TABLE users ALTER COLUMN gender SET NOT NULL;

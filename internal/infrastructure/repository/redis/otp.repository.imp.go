@@ -26,3 +26,19 @@ func (r *OTPRepository) Get(phone string) (string, error) {
 func (r *OTPRepository) Delete(phone string) error {
 	return r.client.Del(context.Background(), "otp:"+phone).Err()
 }
+
+func (r *OTPRepository) SetVerified(phone string, ttl time.Duration) error {
+	return r.client.Set(context.Background(), "verified:"+phone, "true", ttl).Err()
+}
+
+func (r *OTPRepository) IsVerified(phone string) (bool, error) {
+	val, err := r.client.Get(context.Background(), "verified:"+phone).Result()
+	if err == redis.Nil {
+		return false, nil
+	}
+	return val == "true", err
+}
+
+func (r *OTPRepository) DeleteVerified(phone string) error {
+	return r.client.Del(context.Background(), "verified:"+phone).Err()
+}

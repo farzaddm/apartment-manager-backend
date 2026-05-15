@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"apartment-manager-backend/internal/application/service"
-	"apartment-manager-backend/pkg"
+	"apartment-manager-backend/pkg/response"
 
 	"github.com/gin-gonic/gin"
 )

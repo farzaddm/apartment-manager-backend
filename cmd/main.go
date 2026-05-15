@@ -6,6 +6,7 @@ import (
 	"apartment-manager-backend/internal/infrastructure/database"
 	"apartment-manager-backend/internal/infrastructure/jwt"
 	"apartment-manager-backend/internal/infrastructure/repository/postgres"
+	"apartment-manager-backend/pkg/hasher"
 	"net/http"
 
 	"apartment-manager-backend/internal/infrastructure/repository/redis"
@@ -47,18 +48,24 @@ func main() {
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
 
+	// ----- Hasher -----
+	passwordHasher := hasher.NewBcryptHasher()
+
 	// --- SERVICES ---
 	SendOtpService := service.NewSendOtpService(otpRepo, smsService)
-	VerifyOtpServise := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
+	VerifyOtpService := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
+	registerService := service.NewRegisterService(userRepo, otpRepo, refreshRepo, jwtRepo, passwordHasher)
 
 	// --- CONTROLLER ---
 	SendOtpController := controller.NewAuthHandler(SendOtpService)
-	VerifyOtpController := controller.NewVerifyController(VerifyOtpServise)
+	VerifyOtpController := controller.NewVerifyController(VerifyOtpService)
+	registerController := controller.NewRegisterController(registerService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
 		SendOTP:   SendOtpController,
 		VerifyOTP: VerifyOtpController,
+		Register:  registerController,
 	}
 
 	r := routes.SetUpRouter(controllers)

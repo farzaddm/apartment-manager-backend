@@ -58,6 +58,10 @@ func (s *VerifyOTPService) Execute(ctx context.Context, phone, code string) (*Ve
 	}
 
 	if user == nil {
+		if err := s.otpRepo.SetVerified(phone, 5*time.Minute); err != nil {
+			return nil, errors.New("failed_to_store_verification_status")
+		}
+
 		return &VerifyOTPOutput{
 			User:    nil,
 			Message: "account_not_found",
