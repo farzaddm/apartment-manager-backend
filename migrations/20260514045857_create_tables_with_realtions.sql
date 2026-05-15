@@ -25,6 +25,15 @@ CREATE TYPE ticket_status AS ENUM (
     'closed'
 );
 
+CREATE TYPE ticket_category AS ENUM (
+    'maintenance',
+    'plumbing',
+    'electricity',
+    'security',
+    'cleaning',
+    'parking',
+    'other'
+);
 
 -- =========================
 -- UPDATE updated_at FUNCTION
@@ -142,7 +151,7 @@ CREATE TABLE tickets (
     description TEXT,
     body TEXT,
 
-    category VARCHAR(100),
+    category ticket_category DEFAULT 'maintenance',
 
     status ticket_status DEFAULT 'open',
 
@@ -218,7 +227,7 @@ CREATE TABLE announcements (
     description TEXT,
     body TEXT,
 
-    expired_date TIMESTAMPTZ,
+    expired_date TIMESTAMPTZ NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -290,7 +299,7 @@ CREATE TABLE invite_codes (
 
     code VARCHAR(64) UNIQUE NOT NULL,
 
-    expires_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -316,7 +325,7 @@ CREATE TABLE invite_codes (
 -- =========================
 
 CREATE TABLE ticket_announcement_tags (
-    id UUID NOT NULL PRIMARY KEY,
+    id UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
 
     tag_id UUID NOT NULL,
     ticket_id UUID  NULL,
@@ -345,6 +354,84 @@ CREATE TABLE ticket_announcement_tags (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+-- =========================
+-- POLL
+-- =========================
+
+CREATE TABLE polls (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    apartment_id UUID NOT NULL,
+
+    title TEXT NOT NULL,
+    description TEXT,
+
+    expires_at TIMESTAMPTZ NULL,
+    is_votes_public BOOLEAN DEFAULT true ,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL DEFAULT NULL,
+
+    CONSTRAINT fk_polls_apartment
+    FOREIGN KEY (apartment_id)
+    REFERENCES apartments(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- =========================
+-- poll_OPTIONS
+-- =========================
+
+CREATE TABLE poll_options (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    poll_id UUID NOT NULL,
+
+    text TEXT NOT NULL,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL DEFAULT NULL,
+
+    CONSTRAINT fk_poll_options_poll
+    FOREIGN KEY (poll_id)
+    REFERENCES polls(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+);
+
+-- =========================
+-- VOTES
+-- =========================
+
+CREATE TABLE votes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    user_id UUID NOT NULL,
+    option_id UUID NOT NULL,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL DEFAULT NULL,
+
+    CONSTRAINT fk_votes_user
+    FOREIGN KEY (user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+    CONSTRAINT fk_votes_option
+    FOREIGN KEY (option_id)
+    REFERENCES poll_options(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
+
+);
+
+
 
 -- =========================
 -- INDEXES
@@ -389,6 +476,43 @@ ON invite_codes(apartment_id);
 CREATE INDEX idx_invite_codes_deleted_at
 ON invite_codes(deleted_at);
 
+CREATE INDEX idx_polls_apartment
+ON polls(apartment_id);
+
+CREATE INDEX idx_polls_active
+ON polls(apartment_id, expires_at)
+WHERE deleted_at IS NULL;
+
+
+CREATE INDEX idx_poll_options_poll
+ON poll_options(poll_id)
+WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_votes_option
+ON votes(option_id)
+WHERE deleted_at IS NULL;
+
+
+CREATE INDEX idx_votes_user
+ON votes(user_id)
+WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_units_apartment
+ON units(apartment_id)
+WHERE deleted_at IS NULL;
+
+CREATE INDEX idx_tat_ticket
+ON ticket_announcement_tags(ticket_id);
+
+CREATE INDEX idx_tat_announcement
+ON ticket_announcement_tags(announcement_id);
+
+CREATE INDEX idx_tat_tag
+ON ticket_announcement_tags(tag_id);
+
+CREATE UNIQUE INDEX unique_unit_number_per_apartment
+ON units(apartment_id, unit_number)
+WHERE deleted_at IS NULL;
 
 -- =========================
 -- TRIGGERS
@@ -448,12 +572,26 @@ CREATE TRIGGER update_unit_updated_at
 BEFORE UPDATE ON units
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER update_poll_options_updated_at
+BEFORE UPDATE ON poll_options
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_polls_updated_at
+BEFORE UPDATE ON polls
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_votes_updated_at
+BEFORE UPDATE ON votes
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+
 -- +goose Down
-
-
-DROP TABLE IF EXISTS announcement_tags CASCADE;
-DROP TABLE IF EXISTS ticket_tags CASCADE;
-
 DROP TABLE IF EXISTS invite_codes CASCADE;
 
 DROP TABLE IF EXISTS rule_items CASCADE;
@@ -475,6 +613,11 @@ DROP TABLE IF EXISTS ticket_announcement_tags CASCADE;
 
 DROP TABLE IF EXISTS units CASCADE;
 
+DROP TABLE IF EXISTS votes CASCADE;
+
+DROP TABLE IF EXISTS poll_options CASCADE;
+
+DROP TABLE IF EXISTS polls CASCADE;
 
 
 -- =========================================
@@ -484,6 +627,8 @@ DROP TABLE IF EXISTS units CASCADE;
 DROP TYPE IF EXISTS ticket_status CASCADE;
 DROP TYPE IF EXISTS gender_type CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS ticket_category CASCADE;
+
 
 
 -- =========================================
@@ -500,6 +645,12 @@ DROP TRIGGER IF EXISTS update_rules_updated_at ON rules;
 DROP TRIGGER IF EXISTS update_rule_items_updated_at ON rule_items;
 DROP TRIGGER IF EXISTS update_invite_codes_updated_at ON invite_codes;
 DROP TRIGGER IF EXISTS update_ticket_announcement_tags_updated_at ON ticket_announcement_tags;
+DROP TRIGGER IF EXISTS update_unit_updated_at ON units;
+DROP TRIGGER IF EXISTS update_votes_updated_at ON votes;
+DROP TRIGGER IF EXISTS update_poll_options_updated_at ON poll_options;
+DROP TRIGGER IF EXISTS update_polls_updated_at ON polls;
+
+
 
 
 

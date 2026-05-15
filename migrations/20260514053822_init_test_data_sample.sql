@@ -69,27 +69,27 @@ INSERT INTO tickets (id, user_id, title, description, body, category, status)
 VALUES 
 (
     '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333',
-    'Leaking Kitchen Sink', 'Water dripping under sink', 'The pipe underneath the kitchen sink has a slow drip.', 'Plumbing', 'open'
+    'Leaking Kitchen Sink', 'Water dripping under sink', 'The pipe underneath the kitchen sink has a slow drip.', 'plumbing', 'open'
 ),
 (
     '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444',
-    'AC Not Cooling', 'AC blowing warm air', 'AC fan works but air is not cold. High temperature in room.', 'HVAC', 'in-progress'
+    'AC Not Cooling', 'AC blowing warm air', 'AC fan works but air is not cold. High temperature in room.', 'maintenance', 'in-progress'
 ),
 (
     '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555',
-    'Broken Front Door Lock', 'Electronic keypad failing', 'Keypad takes 4-5 tries to recognize code.', 'Security', 'open'
+    'Broken Front Door Lock', 'Electronic keypad failing', 'Keypad takes 4-5 tries to recognize code.', 'security', 'open'
 ),
 (
     '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666',
-    'Loud Noise Complaint', 'Neighbor playing bass late at night', 'Unit 201 has been playing heavy electronic music past 11 PM.', 'Noise', 'closed'
+    'Loud Noise Complaint', 'Neighbor playing bass late at night', 'Unit 201 has been playing heavy electronic music past 11 PM.', 'other', 'closed'
 ),
 (
     '55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333',
-    'Gym Equipment Broken', 'Treadmill #2 belt loose', 'The treadmill closest to the window slips when running.', 'Amenities', 'open'
+    'Gym Equipment Broken', 'Treadmill #2 belt loose', 'The treadmill closest to the window slips when running.', 'maintenance', 'open'
 ),
 (
     '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444',
-    'Light Bulb Replacement', 'Hallway light flickers', 'The light outside my door is flickering constantly.', 'Electrical', 'closed'
+    'Light Bulb Replacement', 'Hallway light flickers', 'The light outside my door is flickering constantly.', 'electricity', 'closed'
 );
 
 -- 5. Insert Comments (6 comments on the tickets)
@@ -181,11 +181,60 @@ VALUES
 ('11111111-8888-8888-8888-888888888886', '66666666-dddd-dddd-dddd-dddddddddddd', '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb', NULL);
 
 
+-- 12. Insert Polls (2 distinct polls for the apartment)
+INSERT INTO polls (id, apartment_id, title, description, expires_at, is_votes_public)
+VALUES 
+(
+    '11111111-7777-7777-7777-777777777771', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Rooftop BBQ Painting Color', 
+    'Please vote on the new accent wall color scheme for the rooftop terrace.', 
+    NOW() + INTERVAL '14 days', 
+    true
+),
+(
+    '11111111-7777-7777-7777-777777777772', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Gym Hour Extension', 
+    'Should we extend gym operating hours to 24/7? (Anonymous tracking verification)', 
+    NOW() + INTERVAL '7 days', 
+    false
+);
+
+-- 13. Insert Options (3 options for the BBQ poll, 2 options for the Gym poll)
+INSERT INTO poll_options (id, poll_id, text)
+VALUES 
+-- Options for Poll 1 (BBQ Paint)
+('11111111-3333-4444-5555-6666666666a1', '11111111-7777-7777-7777-777777777771', 'Ocean Breeze Blue'),
+('11111111-3333-4444-5555-6666666666a2', '11111111-7777-7777-7777-777777777771', 'Urban Charcoal Gray'),
+('11111111-3333-4444-5555-6666666666a3', '11111111-7777-7777-7777-777777777771', 'Terracotta Sunset'),
+
+-- Options for Poll 2 (Gym Hours)
+('11111111-3333-4444-5555-6666666666b1', '11111111-7777-7777-7777-777777777772', 'Yes, extend to 24/7'),
+('11111111-3333-4444-5555-6666666666b2', '11111111-7777-7777-7777-777777777772', 'No, keep current hours (6 AM - 11 PM)');
+
+-- 14. Insert Votes (6 structural user votes mapped to choices)
+INSERT INTO votes (id, user_id, option_id)
+VALUES 
+-- Votes for Poll 1 (BBQ Paint)
+('11111111-0000-1111-2222-333333333331', '33333333-3333-3333-3333-333333333333', '11111111-3333-4444-5555-6666666666a1'), -- Charlie votes Blue
+('11111111-0000-1111-2222-333333333332', '44444444-4444-4444-4444-444444444444', '11111111-3333-4444-5555-6666666666a2'), -- Diana votes Gray
+('11111111-0000-1111-2222-333333333333', '55555555-5555-5555-5555-555555555555', '11111111-3333-4444-5555-6666666666a1'), -- Evan votes Blue
+
+-- Votes for Poll 2 (Gym Hours)
+('11111111-0000-1111-2222-333333333334', '33333333-3333-3333-3333-333333333333', '11111111-3333-4444-5555-6666666666b1'), -- Charlie votes Yes
+('11111111-0000-1111-2222-333333333335', '44444444-4444-4444-4444-444444444444', '11111111-3333-4444-5555-6666666666b1'), -- Diana votes Yes
+('11111111-0000-1111-2222-333333333336', '66666666-6666-6666-6666-666666666666', '11111111-3333-4444-5555-6666666666b2'); -- Fiona votes No
+
+
+
 -- +goose Down
 -- ============================================================================
 -- TRUNCATE SEED DATA
 -- ============================================================================
-
+TRUNCATE TABLE votes CASCADE;
+TRUNCATE TABLE poll_options CASCADE;
+TRUNCATE TABLE polls CASCADE;
 TRUNCATE TABLE ticket_announcement_tags CASCADE;
 TRUNCATE TABLE invite_codes CASCADE;
 TRUNCATE TABLE rule_items CASCADE;
