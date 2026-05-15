@@ -55,17 +55,20 @@ func main() {
 	SendOtpService := service.NewSendOtpService(otpRepo, smsService)
 	VerifyOtpService := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
 	registerService := service.NewRegisterService(userRepo, otpRepo, refreshRepo, jwtRepo, passwordHasher)
+	LoginService := service.NewLoginService(userRepo, refreshRepo, jwtRepo, passwordHasher)
 
 	// --- CONTROLLER ---
 	SendOtpController := controller.NewAuthHandler(SendOtpService)
 	VerifyOtpController := controller.NewVerifyController(VerifyOtpService)
 	registerController := controller.NewRegisterController(registerService)
+	loginController := controller.NewLoginController(LoginService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
 		SendOTP:   SendOtpController,
 		VerifyOTP: VerifyOtpController,
 		Register:  registerController,
+		Login:     loginController,
 	}
 
 	r := routes.SetUpRouter(controllers)
