@@ -9,8 +9,6 @@ type Apartment struct {
 	Address    string
 	PostalCode string
 
-	UnitCount int
-
 	Users         []User
 	Announcements []Announcement
 	Rules         []Rule

@@ -19,11 +19,13 @@ type User struct {
 	Password string `gorm:"column:password"`
 
 	Role   UserRole   `gorm:"column:role"`
-	Gender GenderType `gorm:"column:gender"`
+	Gender *GenderType `gorm:"column:gender"`
 
-	ProfileImageURL string `gorm:"column:profile_image_url"`
+	ProfileImageURL *string `gorm:"column:profile_image_url"`
 
 	Apartment *Apartment `gorm:"foreignKey:ApartmentID"`
-	Tickets   []Ticket   `gorm:"foreignKey:user_id"`
-	Comments  []Comment  `gorm:"foreignKey:user_id"`
+
+	Tickets  []Ticket `gorm:"foreignKey:user_id"`
+	Comments []Comment  `gorm:"foreignKey:user_id"`
+
 }

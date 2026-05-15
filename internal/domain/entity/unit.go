@@ -2,14 +2,15 @@ package entity
 
 import "github.com/google/uuid"
 
-type Rule struct {
+type Unit struct {
 	BaseModel
 
 	ApartmentID uuid.UUID
+	UserID      *uuid.UUID
 
-	Category RuleCategory
+	UnitNumber string
+	Floor      int
 
 	Apartment Apartment
-
-	Items []RuleItem
+	User      User
 }
