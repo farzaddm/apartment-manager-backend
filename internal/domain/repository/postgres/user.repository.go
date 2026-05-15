@@ -10,4 +10,5 @@ type UserInterface interface {
 	ExistEmail(ctx context.Context, email string) (bool, error)
 	GetByPhone(ctx context.Context, phone string) (*entity.User, error)
 	GetByUsername(ctx context.Context, username string) (*entity.User, error)
+	GetByID(ctx context.Context, id string) (*entity.User, error)
 }

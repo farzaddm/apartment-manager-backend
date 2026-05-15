@@ -15,6 +15,7 @@ type Controllers struct {
 	Login     *controller.LoginController
 	Refresh   *controller.RefreshController
 	Logout    *controller.LogoutController
+	Profile   *controller.ProfileController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -30,7 +31,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Logout.Logout)
-
+		protected.GET("/me", handler.Profile.GetMe)
 	}
 
 	return r

@@ -67,3 +67,16 @@ func (r *userRepository) ExistPhone(ctx context.Context, phone string) (bool, er
 	}
 	return count > 0, nil
 }
+
+func (r *userRepository) GetByID(ctx context.Context, id string) (*entity.User, error) {
+	var user entity.User
+	err := r.db.WithContext(ctx).First(&user, "id = ?", id).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}

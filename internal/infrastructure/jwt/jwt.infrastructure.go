@@ -1,33 +1,33 @@
 package jwt
 
 import (
+	"apartment-manager-backend/config"
+	domainJwt "apartment-manager-backend/internal/domain/jwt"
 	"errors"
 	"time"
-
-	domainJwt "apartment-manager-backend/internal/domain/jwt"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
 type tokenService struct {
-	accessSecret  string
-	refreshSecret string
+	cfg config.JWTConfig
 }
 
-func NewTokenService(accessSecret, refreshSecret string) domainJwt.TokenServiceInterface {
+func NewTokenService(cfg config.JWTConfig) domainJwt.TokenServiceInterface {
 	return &tokenService{
-		accessSecret:  accessSecret,
-		refreshSecret: refreshSecret,
+		cfg: cfg,
 	}
 }
 
 func (s *tokenService) GenerateAccessToken(userID uuid.UUID, role string) (string, error) {
-	return s.generateToken(userID, role, s.accessSecret, "access", 15*time.Minute)
+	duration := time.Duration(s.cfg.AccessExpireMinutes) * time.Minute
+	return s.generateToken(userID, role, s.cfg.AccessSecret, "access", duration)
 }
 
 func (s *tokenService) GenerateRefreshToken(userID uuid.UUID, role string) (string, error) {
-	return s.generateToken(userID, role, s.refreshSecret, "refresh", 7*24*time.Hour)
+	duration := time.Duration(s.cfg.RefreshExpireDays) * 24 * time.Hour
+	return s.generateToken(userID, role, s.cfg.RefreshSecret, "refresh", duration)
 }
 
 func (s *tokenService) generateToken(userID uuid.UUID, role string, secret string, tokenType string, duration time.Duration) (string, error) {
@@ -54,10 +54,10 @@ func (s *tokenService) ValidateToken(tokenString string) (*domainJwt.MapClaims, 
 		tokenType, _ := claims["token_type"].(string)
 
 		if tokenType == "refresh" {
-			return []byte(s.refreshSecret), nil
+			return []byte(s.cfg.RefreshSecret), nil
 		}
 
-		return []byte(s.accessSecret), nil
+		return []byte(s.cfg.AccessSecret), nil
 	})
 
 	if err != nil {

@@ -43,7 +43,7 @@ func main() {
 	userRepo := postgres.NewUserRepository(db)
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
-	jwtRepo := jwt.NewTokenService(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret)
+	jwtRepo := jwt.NewTokenService(cfg.JWT)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -58,6 +58,7 @@ func main() {
 	LoginService := service.NewLoginService(userRepo, refreshRepo, jwtRepo, passwordHasher)
 	RefreshService := service.NewRefreshTokenService(refreshRepo, jwtRepo)
 	LogoutService := service.NewLogoutService(refreshRepo)
+	profileService := service.NewProfileService(userRepo)
 
 	// --- CONTROLLER ---
 	SendOtpController := controller.NewAuthHandler(SendOtpService)
@@ -66,6 +67,7 @@ func main() {
 	loginController := controller.NewLoginController(LoginService)
 	refreshController := controller.NewRefreshController(RefreshService)
 	logoutController := controller.NewLogoutController(LogoutService)
+	profileController := controller.NewProfileController(profileService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -75,6 +77,7 @@ func main() {
 		Login:     loginController,
 		Refresh:   refreshController,
 		Logout:    logoutController,
+		Profile:   profileController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
