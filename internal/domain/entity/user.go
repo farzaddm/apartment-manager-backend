@@ -18,9 +18,9 @@ type User struct {
 
 	Role UserRole
 
-	Gender GenderType
+	Gender *GenderType
 
-	ProfileImageURL string
+	ProfileImageURL *string
 
 	Apartment Apartment
 

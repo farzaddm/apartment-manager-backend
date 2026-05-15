@@ -143,12 +143,12 @@ VALUES
 -- 8. Insert Rules (6 rule categories)
 INSERT INTO rules (id, apartment_id, category)
 VALUES 
-('11111111-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Pet Policy'),
-('22222222-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Noise Regulations'),
-('33333333-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Gym Rules'),
-('44444444-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Garbage & Recycling'),
-('55555555-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Parking Bylaws'),
-('66666666-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'Pool Policy');
+('11111111-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'pet_policy'),
+('22222222-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'noise_regulations'),
+('33333333-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'gym_rules'),
+('44444444-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'garbage_recycling'),
+('55555555-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'parking_bylaws'),
+('66666666-ffff-ffff-ffff-ffffffffffff', 'a0000000-0000-0000-0000-000000000000', 'pool_policy');
 
 -- 9. Insert Rule Items (6 details mapped to rules)
 INSERT INTO rule_items (id, rule_id, body)

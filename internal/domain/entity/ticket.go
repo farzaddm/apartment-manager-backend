@@ -11,7 +11,7 @@ type Ticket struct {
 	Description string
 	Body        string
 
-	Category string
+	Category TicketCategory
 
 	Status TicketStatus
 
@@ -19,5 +19,5 @@ type Ticket struct {
 
 	Comments []Comment
 
-	Tags []TicketAnnouncementTag 
+	Tags []TicketAnnouncementTag
 }

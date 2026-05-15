@@ -35,6 +35,18 @@ CREATE TYPE ticket_category AS ENUM (
     'other'
 );
 
+
+CREATE TYPE rule_category AS ENUM (
+    'pet_policy',
+    'noise_regulations',
+    'gym_rules',
+    'garbage_recycling',
+    'parking_bylaws',
+    'pool_policy',
+    'other'
+);
+
+
 -- =========================
 -- UPDATE updated_at FUNCTION
 -- =========================
@@ -59,10 +71,10 @@ CREATE TABLE apartments (
 
     name VARCHAR(255) NOT NULL,
 
-    province VARCHAR(100),
-    city VARCHAR(100),
-    address TEXT,
-    postal_code VARCHAR(20),
+    province VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    address TEXT NOT NULL,
+    postal_code VARCHAR(20) NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -84,15 +96,15 @@ CREATE TABLE users (
 
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20) UNIQUE,
+    phone VARCHAR(20) UNIQUE NOT NULL,
 
     password TEXT NOT NULL,
 
-    role user_role DEFAULT 'resident',
+    role user_role DEFAULT 'resident' NOT NULL,
 
-    gender gender_type,
+    gender gender_type NULL,
 
-    profile_image_url TEXT,
+    profile_image_url TEXT DEFAULT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -118,7 +130,7 @@ CREATE TABLE units (
 
     unit_number VARCHAR(50) NOT NULL,
 
-    floor INTEGER,
+    floor INTEGER NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -148,12 +160,12 @@ CREATE TABLE tickets (
     user_id UUID  NULL,
 
     title VARCHAR(255) NOT NULL,
-    description TEXT,
-    body TEXT,
+    description TEXT DEFAULT '',
+    body TEXT NOT NULL,
 
-    category ticket_category DEFAULT 'maintenance',
+    category ticket_category DEFAULT 'maintenance' NOT NULL,
 
-    status ticket_status DEFAULT 'open',
+    status ticket_status DEFAULT 'open' NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -178,7 +190,7 @@ CREATE TABLE comments (
     ticket_id UUID NOT NULL,
 
     body TEXT NOT NULL,
-    committed_order INTEGER DEFAULT 0,
+    committed_order INTEGER DEFAULT 0 NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -224,8 +236,8 @@ CREATE TABLE announcements (
     apartment_id UUID NOT NULL,
 
     title VARCHAR(255) NOT NULL,
-    description TEXT,
-    body TEXT,
+    description TEXT DEFAULT '',
+    body TEXT NOT NULL,
 
     expired_date TIMESTAMPTZ NULL,
 
@@ -250,7 +262,7 @@ CREATE TABLE rules (
 
     apartment_id UUID NOT NULL,
 
-    category VARCHAR(255) NOT NULL,
+    category rule_category DEFAULT 'other' NOT NULL,
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -365,7 +377,7 @@ CREATE TABLE polls (
     apartment_id UUID NOT NULL,
 
     title TEXT NOT NULL,
-    description TEXT,
+    description TEXT DEFAULT '' NOT NULL,
 
     expires_at TIMESTAMPTZ NULL,
     is_votes_public BOOLEAN DEFAULT true ,
@@ -390,7 +402,7 @@ CREATE TABLE poll_options (
 
     poll_id UUID NOT NULL,
 
-    text TEXT NOT NULL,
+    text TEXT NOT NULL DEFAULT '',
 
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -628,6 +640,8 @@ DROP TYPE IF EXISTS ticket_status CASCADE;
 DROP TYPE IF EXISTS gender_type CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
 DROP TYPE IF EXISTS ticket_category CASCADE;
+DROP TYPE IF EXISTS rule_category CASCADE;
+
 
 
 

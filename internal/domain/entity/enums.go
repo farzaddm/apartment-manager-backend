@@ -22,3 +22,27 @@ const (
 	TicketClosed     TicketStatus = "closed"
 	TicketInProgress TicketStatus = "in-progress"
 )
+
+type TicketCategory string
+
+const (
+	TicketMaintenanceCategory TicketCategory = "maintenance"
+	TicketPlumbingCategory    TicketCategory = "plumbing"
+	TicketElectricityCategory TicketCategory = "electricity"
+	TicketSecurityCategory    TicketCategory = "security"
+	TicketCleaningCategory    TicketCategory = "cleaning"
+	TicketParkingCategory     TicketCategory = "parking"
+	TicketOtherCategory       TicketCategory = "other"
+)
+
+type RuleCategory string
+
+const (
+	RulePetPolicyCategory        RuleCategory = "pet_policy"
+	RuleNoiseRegulationsCategory RuleCategory = "noise_regulations"
+	RuleGymRulesCategory         RuleCategory = "gym_rules"
+	RuleGarbageRecyclingCategory RuleCategory = "garbage_recycling"
+	RuleParkingBylawsCategory    RuleCategory = "parking_bylaws"
+	RulePoolPolicyCategory       RuleCategory = "pool_policy"
+	RuleRuleOtherCategory        RuleCategory = "other"
+)

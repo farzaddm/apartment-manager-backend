@@ -7,7 +7,7 @@ type Rule struct {
 
 	ApartmentID uuid.UUID
 
-	Category string
+	Category RuleCategory
 
 	Apartment Apartment
 
