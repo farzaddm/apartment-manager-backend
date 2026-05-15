@@ -54,16 +54,18 @@ func main() {
 	// --- SERVICES ---
 	SendOtpService := service.NewSendOtpService(otpRepo, smsService)
 	VerifyOtpService := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
-	registerService := service.NewRegisterService(userRepo, otpRepo, refreshRepo, jwtRepo, passwordHasher)
+	RegisterService := service.NewRegisterService(userRepo, otpRepo, refreshRepo, jwtRepo, passwordHasher)
 	LoginService := service.NewLoginService(userRepo, refreshRepo, jwtRepo, passwordHasher)
-	refreshService := service.NewRefreshTokenService(refreshRepo, jwtRepo)
+	RefreshService := service.NewRefreshTokenService(refreshRepo, jwtRepo)
+	LogoutService := service.NewLogoutService(refreshRepo)
 
 	// --- CONTROLLER ---
 	SendOtpController := controller.NewAuthHandler(SendOtpService)
 	VerifyOtpController := controller.NewVerifyController(VerifyOtpService)
-	registerController := controller.NewRegisterController(registerService)
+	registerController := controller.NewRegisterController(RegisterService)
 	loginController := controller.NewLoginController(LoginService)
-	refreshController := controller.NewRefreshController(refreshService)
+	refreshController := controller.NewRefreshController(RefreshService)
+	logoutController := controller.NewLogoutController(LogoutService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -72,9 +74,10 @@ func main() {
 		Register:  registerController,
 		Login:     loginController,
 		Refresh:   refreshController,
+		Logout:    logoutController,
 	}
 
-	r := routes.SetUpRouter(controllers)
+	r := routes.SetUpRouter(controllers, jwtRepo)
 
 	log.Println("server running on :8080")
 	http.ListenAndServe(":8080", r)
