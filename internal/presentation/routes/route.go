@@ -11,6 +11,7 @@ type Controllers struct {
 	VerifyOTP *controller.VerifyController
 	Register  *controller.RegisterController
 	Login     *controller.LoginController
+	Refresh   *controller.RefreshController
 }
 
 func SetUpRouter(handler *Controllers) *gin.Engine {
@@ -20,6 +21,7 @@ func SetUpRouter(handler *Controllers) *gin.Engine {
 	r.POST("/verify-otp", handler.VerifyOTP.VerifyOTP)
 	r.POST("/register", handler.Register.Register)
 	r.POST("/login", handler.Login.Login)
+	r.POST("/refresh", handler.Refresh.Refresh)
 
 	return r
 }
