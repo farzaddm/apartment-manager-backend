@@ -85,10 +85,11 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 }
 
 // /////////////////// List / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
-
+// TODO: im not sure that is this code worked or not ? (maybe need some struct tags in domainRepo.TicketWithCommentCount)
 func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error) {
 	var tickets []domainRepo.TicketWithCommentCount
 
+	// TODO: Verify whether using Select here could cause issues.
 	query := r.db.WithContext(ctx).
 		Model(&entity.Ticket{}).
 		Select("tickets.*, COUNT(comments.id) as comment_count").

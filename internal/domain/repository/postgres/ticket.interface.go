@@ -32,7 +32,7 @@ type TicketFilter struct {
 	Offset *int
 }
 
-type TicketWithCommentCount struct {
+type TicketWithCommentCount struct { 
 	entity.Ticket
 	CommentCount int64
 }
