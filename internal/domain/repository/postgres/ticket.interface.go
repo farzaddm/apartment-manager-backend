@@ -16,7 +16,7 @@ type TicketInterface interface {
 
 	GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
 
-	List(ctx context.Context, filter TicketFilter) ([]entity.Ticket, error)
+	List(ctx context.Context, filter TicketFilter) ([]TicketWithCommentCount, error)
 
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) error
@@ -30,4 +30,9 @@ type TicketFilter struct {
 
 	Limit  *int
 	Offset *int
+}
+
+type TicketWithCommentCount struct {
+	entity.Ticket
+	CommentCount int64
 }

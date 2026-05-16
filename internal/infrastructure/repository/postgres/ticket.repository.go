@@ -4,6 +4,7 @@ import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -19,9 +20,13 @@ func NewTicketRepository(db *gorm.DB) domainRepo.TicketInterface {
 	}
 }
 
+// /////////////////// Create / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
 func (r *ticketRepository) Create(ctx context.Context, ticket *entity.Ticket) error {
 	return r.db.WithContext(ctx).Create(ticket).Error
 }
+
+// /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
 func (r *ticketRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	result := r.db.WithContext(ctx).
@@ -38,14 +43,20 @@ func (r *ticketRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// /////////////////// Get / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
 func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
 	var ticket entity.Ticket
 
 	err := r.db.WithContext(ctx).
+		Preload("Tags").
 		First(&ticket, "id = ?", id).
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -59,18 +70,24 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 		Preload("User").
 		Preload("Comments").
 		Preload("Comments.User").
+		Preload("Tags").
 		First(&ticket, "id = ?", id).
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
 	return &ticket, nil
 }
 
-func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter) ([]entity.Ticket, error) {
-	var tickets []entity.Ticket
+// /////////////////// List / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error) {
+	var tickets []domainRepo.TicketWithCommentCount
 
 	query := r.db.WithContext(ctx).
 		Model(&entity.Ticket{}).
@@ -90,12 +107,14 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		query = query.Offset(*filter.Offset)
 	}
 
-	if err := query.Find(&tickets).Error; err != nil {
+	if err := query.Scan(&tickets).Error; err != nil {
 		return nil, err
 	}
 
 	return tickets, nil
 }
+
+// /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
 func (r *ticketRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error {
 	result := r.db.WithContext(ctx).
