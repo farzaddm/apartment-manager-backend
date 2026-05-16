@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"apartment-manager-backend/internal/application/dto/user"
 	"apartment-manager-backend/internal/domain/entity"
 	"context"
 )
@@ -10,5 +11,7 @@ type UserInterface interface {
 	ExistEmail(ctx context.Context, email string) (bool, error)
 	GetByPhone(ctx context.Context, phone string) (*entity.User, error)
 	GetByUsername(ctx context.Context, username string) (*entity.User, error)
-	GetByID(ctx context.Context, id string) (*entity.User, error)
+	GetById(ctx context.Context, id string) (*entity.User, error)
+	Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error
+	Delete(ctx context.Context, id string) error
 }

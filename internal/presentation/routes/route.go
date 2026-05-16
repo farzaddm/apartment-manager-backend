@@ -9,8 +9,8 @@ import (
 )
 
 type Controllers struct {
-	Auth    *controller.AuthController
-	Profile *controller.ProfileController
+	Auth *controller.AuthController
+	User *controller.UserController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -22,11 +22,15 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/login", handler.Auth.Login)
 	r.POST("/refresh", handler.Auth.Refresh)
 
+	// dont need id if user is authenticated
+	r.PUT("/user/:user_id", handler.User.Update)
+	r.DELETE("/user/:user_id", handler.User.Delete)
+	r.GET("/user/:user_id", handler.User.GetById)
+
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Auth.Logout)
-		protected.GET("/me", handler.Profile.GetMe)
 	}
 
 	return r

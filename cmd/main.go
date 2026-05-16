@@ -60,16 +60,16 @@ func main() {
 		passwordHasher,
 		cfg.JWT.RefreshExpireDays,
 	)
-	profileService := service.NewProfileService(userRepo)
+	userService := service.NewUserService(userRepo, passwordHasher)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
-	profileController := controller.NewProfileController(profileService)
+	userController := controller.NewUserController(userService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
-		Auth:    authController,
-		Profile: profileController,
+		Auth: authController,
+		User: userController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
