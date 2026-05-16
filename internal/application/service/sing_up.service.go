@@ -65,6 +65,8 @@ func (s *RegisterService) Execute(ctx context.Context, input dto.RegisterInput) 
 		return nil, errors.New("failed_to_hash_password")
 	}
 
+	gender := entity.GenderFemale
+
 	newUser := &entity.User{
 		FirstName: input.FirstName,
 		LastName:  input.LastName,
@@ -73,7 +75,7 @@ func (s *RegisterService) Execute(ctx context.Context, input dto.RegisterInput) 
 		Phone:     input.Phone,
 		Password:  hashedPassword,
 		Role:      "resident",
-		Gender:    "female",
+		Gender:    &gender,
 	}
 
 	if err := s.userRepo.Create(ctx, newUser); err != nil {
