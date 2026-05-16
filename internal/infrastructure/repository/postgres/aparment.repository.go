@@ -4,7 +4,9 @@ import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"context"
+	"errors"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -45,7 +47,7 @@ func (r *apartmentRepository) Update(ctx context.Context, apartment *entity.Apar
 
 // /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) Delete(ctx context.Context, id string) error {
+func (r *apartmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).
 		Delete(&entity.Apartment{}, "id = ?", id).
 		Error
@@ -53,7 +55,7 @@ func (r *apartmentRepository) Delete(ctx context.Context, id string) error {
 
 // /////////////////// EXIST / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) Exists(ctx context.Context, id string) (*bool, error) {
+func (r *apartmentRepository) Exists(ctx context.Context, id uuid.UUID) (*bool, error) {
 	var count int64
 
 	err := r.db.WithContext(ctx).
@@ -70,7 +72,7 @@ func (r *apartmentRepository) Exists(ctx context.Context, id string) (*bool, err
 
 // /////////////////// Get / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) GetByID(ctx context.Context, id string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
@@ -78,12 +80,15 @@ func (r *apartmentRepository) GetByID(ctx context.Context, id string) (*entity.A
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id string, relations ...string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	query := r.db.WithContext(ctx)
@@ -97,12 +102,15 @@ func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id strin
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetWithUsers(ctx context.Context, id string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
@@ -111,12 +119,15 @@ func (r *apartmentRepository) GetWithUsers(ctx context.Context, id string) (*ent
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
@@ -125,12 +136,15 @@ func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id strin
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetWithRules(ctx context.Context, id string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
@@ -139,12 +153,15 @@ func (r *apartmentRepository) GetWithRules(ctx context.Context, id string) (*ent
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id string) (*entity.Apartment, error) {
+func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
@@ -153,6 +170,9 @@ func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id string)
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &apartment, nil
@@ -167,6 +187,9 @@ func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, err
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
@@ -186,6 +209,9 @@ func (r *apartmentRepository) ListWithRelations(ctx context.Context, relations .
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
@@ -200,6 +226,9 @@ func (r *apartmentRepository) ListWithUsers(ctx context.Context) ([]entity.Apart
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
@@ -214,6 +243,9 @@ func (r *apartmentRepository) ListWithAnnouncements(ctx context.Context) ([]enti
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
@@ -228,6 +260,9 @@ func (r *apartmentRepository) ListWithRules(ctx context.Context) ([]entity.Apart
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
@@ -242,6 +277,9 @@ func (r *apartmentRepository) ListWithInviteCodes(ctx context.Context) ([]entity
 		Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return apartments, nil
