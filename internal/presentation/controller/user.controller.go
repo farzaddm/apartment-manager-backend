@@ -18,9 +18,9 @@ func NewUserController(userService *service.UserService) *UserController {
 }
 
 func (u *UserController) Update(c *gin.Context) {
-	userId := c.Param("user_id")
-	if userId == "" {
-		response.Error(c, http.StatusBadRequest, "user_id_required", nil)
+	userId, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusBadRequest, "user_not_found_in_session", nil)
 		return
 	}
 
@@ -30,7 +30,7 @@ func (u *UserController) Update(c *gin.Context) {
 		return
 	}
 
-	err := u.userService.Update(c, req, userId)
+	err := u.userService.Update(c, req, userId.(string))
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
 		return
@@ -40,13 +40,13 @@ func (u *UserController) Update(c *gin.Context) {
 }
 
 func (u *UserController) Delete(c *gin.Context) {
-	userId := c.Param("user_id")
-	if userId == "" {
-		response.Error(c, http.StatusBadRequest, "user_id_required", nil)
+	userId, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusBadRequest, "user_not_found_in_session", nil)
 		return
 	}
 
-	err := u.userService.Delete(c.Request.Context(), userId)
+	err := u.userService.Delete(c.Request.Context(), userId.(string))
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
 		return

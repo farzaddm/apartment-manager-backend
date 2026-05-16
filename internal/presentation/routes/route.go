@@ -23,14 +23,14 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/refresh", handler.Auth.Refresh)
 
 	// dont need id if user is authenticated
-	r.PUT("/user/:user_id", handler.User.Update)
-	r.DELETE("/user/:user_id", handler.User.Delete)
 	r.GET("/user/:user_id", handler.User.GetById)
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Auth.Logout)
+		protected.PUT("/user", handler.User.Update)
+		protected.DELETE("/user", handler.User.Delete)
 	}
 
 	return r
