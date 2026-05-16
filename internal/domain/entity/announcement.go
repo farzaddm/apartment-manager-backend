@@ -14,6 +14,8 @@ type Announcement struct {
 	Title       string
 	Description string
 	Body        string
+	Order       AnnouncementOrder
+	IsPinned    bool
 
 	ExpiredDate *time.Time
 	Apartment   Apartment

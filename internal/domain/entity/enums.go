@@ -46,3 +46,12 @@ const (
 	RulePoolPolicyCategory       RuleCategory = "pool_policy"
 	RuleRuleOtherCategory        RuleCategory = "other"
 )
+
+type AnnouncementOrder string
+
+const (
+	WarningAnnouncementOrder       AnnouncementOrder = "warning"
+	VeryImportantAnnouncementOrder AnnouncementOrder = "very_important"
+	ImportantAnnouncementOrder     AnnouncementOrder = "important"
+	OtherAnnouncementOrder         AnnouncementOrder = "other"
+)
