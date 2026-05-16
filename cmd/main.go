@@ -6,14 +6,13 @@ import (
 	"apartment-manager-backend/internal/infrastructure/database"
 	"apartment-manager-backend/internal/infrastructure/jwt"
 	"apartment-manager-backend/internal/infrastructure/repository/postgres"
-	"apartment-manager-backend/pkg/hasher"
-	"net/http"
-
 	"apartment-manager-backend/internal/infrastructure/repository/redis"
 	"apartment-manager-backend/internal/infrastructure/sms"
 	"apartment-manager-backend/internal/presentation/controller"
 	"apartment-manager-backend/internal/presentation/routes"
+	"apartment-manager-backend/pkg/hasher"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -52,32 +51,25 @@ func main() {
 	passwordHasher := hasher.NewBcryptHasher()
 
 	// --- SERVICES ---
-	SendOtpService := service.NewSendOtpService(otpRepo, smsService)
-	VerifyOtpService := service.NewVerifyOTPService(otpRepo, userRepo, refreshRepo, jwtRepo)
-	RegisterService := service.NewRegisterService(userRepo, otpRepo, refreshRepo, jwtRepo, passwordHasher)
-	LoginService := service.NewLoginService(userRepo, refreshRepo, jwtRepo, passwordHasher)
-	RefreshService := service.NewRefreshTokenService(refreshRepo, jwtRepo)
-	LogoutService := service.NewLogoutService(refreshRepo)
+	authService := service.NewAuthService(
+		userRepo,
+		otpRepo,
+		refreshRepo,
+		jwtRepo,
+		smsService,
+		passwordHasher,
+		cfg.JWT.RefreshExpireDays,
+	)
 	profileService := service.NewProfileService(userRepo)
 
 	// --- CONTROLLER ---
-	SendOtpController := controller.NewAuthHandler(SendOtpService)
-	VerifyOtpController := controller.NewVerifyController(VerifyOtpService)
-	registerController := controller.NewRegisterController(RegisterService)
-	loginController := controller.NewLoginController(LoginService)
-	refreshController := controller.NewRefreshController(RefreshService)
-	logoutController := controller.NewLogoutController(LogoutService)
+	authController := controller.NewAuthController(authService)
 	profileController := controller.NewProfileController(profileService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
-		SendOTP:   SendOtpController,
-		VerifyOTP: VerifyOtpController,
-		Register:  registerController,
-		Login:     loginController,
-		Refresh:   refreshController,
-		Logout:    logoutController,
-		Profile:   profileController,
+		Auth:    authController,
+		Profile: profileController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
