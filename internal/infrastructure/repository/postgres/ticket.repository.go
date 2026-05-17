@@ -100,12 +100,12 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		query = query.Where("tickets.user_id = ?", *filter.UserID)
 	}
 
-	if filter.Limit != nil && *filter.Limit > 0 {
-		query = query.Limit(*filter.Limit)
+	if filter.Limit > 0 {
+		query = query.Limit(filter.Limit)
 	}
 
-	if filter.Offset != nil && *filter.Offset > 0 {
-		query = query.Offset(*filter.Offset)
+	if filter.Offset > 0 {
+		query = query.Offset(filter.Offset)
 	}
 
 	if err := query.Scan(&tickets).Error; err != nil {

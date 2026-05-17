@@ -28,8 +28,8 @@ type TicketFilter struct {
 	Status   *entity.TicketStatus
 	Category *entity.TicketCategory
 
-	Limit  *int
-	Offset *int
+	Limit  int
+	Offset int
 }
 
 type TicketWithCommentCount struct { 

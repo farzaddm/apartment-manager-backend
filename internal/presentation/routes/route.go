@@ -9,8 +9,10 @@ import (
 )
 
 type Controllers struct {
-	Auth    *controller.AuthController
-	Profile *controller.ProfileController
+	Auth      *controller.AuthController
+	Profile   *controller.ProfileController
+	Apartment *controller.ApartmentController
+	Ticket    *controller.TicketController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -27,6 +29,8 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	{
 		protected.POST("/logout", handler.Auth.Logout)
 		protected.GET("/me", handler.Profile.GetMe)
+		SetUpApartmentRoutes(protected, handler.Apartment)
+		SetUpTicketRoutes(protected, handler.Ticket)
 	}
 
 	return r
