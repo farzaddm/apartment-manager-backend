@@ -40,9 +40,7 @@ type apartmentService struct {
 }
 
 func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentService {
-	return &apartmentService{
-		apartmentRepo: apartmentRepo,
-	}
+	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
 func (s *apartmentService) Create(ctx context.Context, apartment *entity.Apartment) error {

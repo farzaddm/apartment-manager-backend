@@ -15,9 +15,7 @@ type apartmentRepository struct {
 }
 
 func NewApartmentRepository(db *gorm.DB) domainRepo.ApartmentInterface {
-	return &apartmentRepository{
-		db: db,
-	}
+	return &apartmentRepository{db: db}
 }
 
 // /////////////////// Create / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
@@ -292,4 +290,21 @@ func (r *apartmentRepository) ListWithInviteCodes(ctx context.Context) ([]entity
 		return nil, err
 	}
 	return apartments, nil
+}
+
+func (r *apartmentRepository) GetApartmentManagerID(ctx context.Context, apartmentID string) (string, error) {
+	var manager entity.User
+
+	err := r.db.WithContext(ctx).
+		Where("apartment_id = ? AND role = ?", apartmentID, "manager").
+		First(&manager).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", errors.New("no manager found for this building")
+		}
+		return "", err
+	}
+
+	return manager.ID.String(), nil
 }

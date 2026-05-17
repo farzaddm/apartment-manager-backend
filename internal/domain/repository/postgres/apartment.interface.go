@@ -30,4 +30,6 @@ type ApartmentInterface interface {
 	ListWithAnnouncements(ctx context.Context) ([]entity.Apartment, error)
 	ListWithRules(ctx context.Context) ([]entity.Apartment, error)
 	ListWithInviteCodes(ctx context.Context) ([]entity.Apartment, error)
+
+	GetApartmentManagerID(ctx context.Context, apartmentID string) (string, error)
 }
