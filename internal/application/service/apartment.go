@@ -1,11 +1,14 @@
 package service
 
 import (
+	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ApartmentService interface {
@@ -47,11 +50,27 @@ func (s *apartmentService) Create(ctx context.Context, apartment *entity.Apartme
 }
 
 func (s *apartmentService) Update(ctx context.Context, apartment *entity.Apartment) error {
-	return s.apartmentRepo.Update(ctx, apartment)
+	err := s.apartmentRepo.Update(ctx, apartment)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrApartmentNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *apartmentService) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.apartmentRepo.Delete(ctx, id)
+	err := s.apartmentRepo.Delete(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrApartmentNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -63,27 +82,81 @@ func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, erro
 }
 
 func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetByID(ctx, id)
+	apartment, err := s.apartmentRepo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetByIDWithRelations(ctx, id, relations...)
+	apartment, err := s.apartmentRepo.GetByIDWithRelations(ctx, id, relations...)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetWithUsers(ctx, id)
+	apartment, err := s.apartmentRepo.GetWithUsers(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetWithAnnouncements(ctx, id)
+	apartment, err := s.apartmentRepo.GetWithAnnouncements(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetWithRules(ctx, id)
+	apartment, err := s.apartmentRepo.GetWithRules(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	return s.apartmentRepo.GetWithInviteCodes(ctx, id)
+	apartment, err := s.apartmentRepo.GetWithInviteCodes(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return apartment, nil
 }
 
 // func (s *apartmentService) List(ctx context.Context) ([]entity.Apartment, error) {

@@ -2,12 +2,15 @@ package service
 
 import (
 	"apartment-manager-backend/internal/application/dto"
+	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"errors"
 
 	"context"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type TicketService interface {
@@ -22,6 +25,7 @@ type TicketService interface {
 	List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error)
 
 	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
 }
 
 type ticketService struct {
@@ -37,15 +41,41 @@ func (s *ticketService) Create(ctx context.Context, ticket *entity.Ticket) error
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.repo.Delete(ctx, id)
+	err := s.repo.Delete(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrTicketNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
-	return s.repo.GetByID(ctx, id)
+	ticket, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if ticket == nil {
+		return nil, service_error.ErrTicketNotFound
+	}
+
+	return ticket, nil
 }
 
 func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
-	return s.repo.GetByIDWithAllRelations(ctx, id)
+	ticket, err := s.repo.GetByIDWithAllRelations(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if ticket == nil {
+		return nil, service_error.ErrTicketNotFound
+	}
+
+	return ticket, nil
 }
 
 func (s *ticketService) List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error) {
@@ -53,15 +83,29 @@ func (s *ticketService) List(ctx context.Context, filter domainRepo.TicketFilter
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
-	if err := s.repo.UpdateStatus(ctx, id, req.Status); err != nil {
-		return err
-	}
-
 	if err := s.repo.UpdateCategory(ctx, id, req.Category); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrTicketNotFound
+		}
 		return err
 	}
 
 	if err := s.repo.UpdateContent(ctx, id, req.Title, req.Description, req.Body); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrTicketNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (s *ticketService) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error {
+	err := s.repo.UpdateStatus(ctx, id, status)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return service_error.ErrTicketNotFound
+		}
 		return err
 	}
 
