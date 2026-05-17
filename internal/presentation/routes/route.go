@@ -27,6 +27,8 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	{
 		protected.POST("/logout", handler.Auth.Logout)
 		protected.GET("/me", handler.Profile.GetMe)
+		SetUpApartmentRoutes(protected)
+		SetUpTicketRoutes(protected)
 	}
 
 	return r
