@@ -22,7 +22,7 @@ type TicketService interface {
 
 	GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
 
-	List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error)
+	List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error)
 
 	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
@@ -78,8 +78,15 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 	return ticket, nil
 }
 
-func (s *ticketService) List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error) {
-	return s.repo.List(ctx, filter)
+func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error) {
+	new_filter := domainRepo.TicketFilter{
+		UserID:   filter.UserID,
+		Status:   filter.Status,
+		Category: filter.Category,
+		Limit:    filter.Limit,
+		Offset:   filter.Limit * (filter.Page - 1),
+	}
+	return s.repo.List(ctx, new_filter)
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
