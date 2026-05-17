@@ -1,13 +1,17 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"apartment-manager-backend/internal/presentation/controller"
 
-func SetUpTicketRoutes(g *gin.RouterGroup) {
-	g.POST("/tickets")
-	g.GET("/tickets/:id")
-	g.GET("/tickets/:id/fully")
-	g.GET("/tickets")
-	g.PUT("tickets/:id")
-	g.PATCH("tickets/:id/status")
-	g.DELETE("tickets/:id")
+	"github.com/gin-gonic/gin"
+)
+
+func SetUpTicketRoutes(g *gin.RouterGroup, handler *controller.TicketController) {
+	g.POST("/tickets", handler.Create)
+	g.GET("/tickets/:id", handler.GetByID)
+	g.GET("/tickets/:id/fully", handler.GetFully)
+	g.GET("/tickets", handler.List)
+	g.PUT("/tickets/:id", handler.Update)
+	g.PATCH("/tickets/:id/status", handler.UpdateTicketStatus)
+	g.DELETE("/tickets/:id", handler.Delete)
 }
