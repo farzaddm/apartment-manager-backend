@@ -15,3 +15,7 @@ type InviteCodeResponse struct {
 	Code        string    `json:"code"`
 	ExpiresAt   time.Time `json:"expires_at"`
 }
+
+type ValidateInviteCodeRequest struct {
+	Code string
+}

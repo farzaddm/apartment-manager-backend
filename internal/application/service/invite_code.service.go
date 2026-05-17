@@ -91,3 +91,28 @@ func (s *InviteCodeService) Create(ctx context.Context, req dto.CreateInviteRequ
 
 	return inviteCode, nil
 }
+
+func (s *InviteCodeService) Validate(ctx context.Context, req dto.ValidateInviteCodeRequest, userID string) error {
+	invite, err := s.inviteCodeRepo.GetByCode(ctx, req.Code)
+	if err != nil {
+		return err
+	}
+	if invite == nil {
+		return errors.New("invalid or non-existent invite code")
+	}
+
+	if time.Now().After(invite.ExpiresAt) {
+		return errors.New("this invite code has expired")
+	}
+
+	if invite.Unit.UserID != nil {
+		return errors.New("this unit has already been occupied by another resident")
+	}
+
+	err = s.inviteCodeRepo.AssignUserToUnitAndApartment(ctx, userID, invite.ApartmentID.String(), invite.UnitID.String())
+	if err != nil {
+		return errors.New("failed to finalize building assignment: " + err.Error())
+	}
+
+	return nil
+}

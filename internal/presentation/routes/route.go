@@ -41,6 +41,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		protected.POST("/user/profile-image/", handler.User.SetProfileImage)
 
 		protected.POST("/invite-code", handler.InviteCode.Create)
+		protected.POST("/invite-code/validate", handler.InviteCode.Validate)
 	}
 
 	return r

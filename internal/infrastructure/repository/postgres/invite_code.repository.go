@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -36,4 +37,37 @@ func (r *InviteCodeRepository) GetActiveInviteCode(ctx context.Context, apartmen
 	}
 
 	return &invite, nil
+}
+
+func (r *InviteCodeRepository) GetByCode(ctx context.Context, code string) (*entity.InviteCode, error) {
+	var invite entity.InviteCode
+	err := r.db.WithContext(ctx).Where("code = ?", code).Preload("Unit").First(&invite).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil // Return nil if code doesn't exist
+		}
+		return nil, err
+	}
+	return &invite, nil
+}
+
+func (r *InviteCodeRepository) AssignUserToUnitAndApartment(ctx context.Context, userID string, apartmentID string, unitID string) error {
+	userUUID, _ := uuid.Parse(userID)
+	aptUUID, _ := uuid.Parse(apartmentID)
+	unitUUID, _ := uuid.Parse(unitID)
+
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		err := tx.Model(&entity.User{}).Where("id = ?", userUUID).Update("apartment_id", aptUUID).Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.Model(&entity.Unit{}).Where("id = ?", unitUUID).Update("user_id", userUUID).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

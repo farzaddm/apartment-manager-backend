@@ -9,6 +9,7 @@ type InviteCodeInterface interface {
 	Create(ctx context.Context, inviteCode *entity.InviteCode) error
 
 	GetActiveInviteCode(ctx context.Context, apartmentID string, unitID string) (*entity.InviteCode, error)
-	//ValidateInviteCode(ctx context.Context) error
+	GetByCode(ctx context.Context, code string) (*entity.InviteCode, error)
 
+	AssignUserToUnitAndApartment(ctx context.Context, userID string, apartmentID string, unitID string) error
 }
