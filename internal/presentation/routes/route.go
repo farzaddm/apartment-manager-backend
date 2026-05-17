@@ -22,7 +22,6 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/login", handler.Auth.Login)
 	r.POST("/refresh", handler.Auth.Refresh)
 
-	// dont need id if user is authenticated
 	r.GET("/user/:user_id", handler.User.GetById)
 
 	protected := r.Group("/")
