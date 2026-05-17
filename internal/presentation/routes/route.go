@@ -18,6 +18,8 @@ type Controllers struct {
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
 	r := gin.New()
 
+	r.Static("/uploads", "./uploads")
+
 	r.POST("/send-otp", handler.Auth.SendOTP)
 	r.POST("/verify-otp", handler.Auth.VerifyOTP)
 	r.POST("/register", handler.Auth.Register)
@@ -34,6 +36,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		SetUpTicketRoutes(protected, handler.Ticket)
 		protected.PUT("/user", handler.User.Update)
 		protected.DELETE("/user", handler.User.Delete)
+		protected.POST("/user/profile-image/", handler.User.SetProfileImage)
 	}
 
 	return r

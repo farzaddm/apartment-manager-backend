@@ -26,6 +26,7 @@ type TicketService interface {
 
 	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
+	GetUserTickets(ctx context.Context, userID string) ([]dto.TicketResponse, error)
 }
 
 type ticketService struct {
@@ -117,4 +118,43 @@ func (s *ticketService) UpdateStatus(ctx context.Context, id uuid.UUID, status e
 	}
 
 	return nil
+}
+
+func MapTicketsToResponse(domainTickets []entity.Ticket) []dto.TicketResponse {
+	responses := make([]dto.TicketResponse, len(domainTickets))
+
+	for i, t := range domainTickets {
+		var tagIDs []string
+		for _, ticketTag := range t.Tags {
+			tagIDs = append(tagIDs, ticketTag.TagID.String())
+		}
+
+		var uID uuid.UUID
+		if t.UserID != nil {
+			uID = *t.UserID
+		}
+
+		responses[i] = dto.TicketResponse{
+			ID:          t.ID, // Inherited from your BaseModel
+			UserID:      uID,
+			Title:       t.Title,
+			Description: t.Description,
+			Body:        t.Body,
+			Category:    string(t.Category),
+			Status:      string(t.Status),
+			Tags:        tagIDs,
+		}
+	}
+
+	return responses
+}
+
+func (s *ticketService) GetUserTickets(ctx context.Context, userID string) ([]dto.TicketResponse, error) {
+	rawTickets, err := s.repo.GetTicketsByUserId(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	tickets := MapTicketsToResponse(rawTickets)
+	return tickets, nil
 }

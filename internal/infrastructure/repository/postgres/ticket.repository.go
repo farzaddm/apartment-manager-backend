@@ -15,9 +15,7 @@ type ticketRepository struct {
 }
 
 func NewTicketRepository(db *gorm.DB) domainRepo.TicketInterface {
-	return &ticketRepository{
-		db: db,
-	}
+	return &ticketRepository{db: db}
 }
 
 // /////////////////// Create / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
@@ -170,4 +168,14 @@ func (r *ticketRepository) UpdateContent(ctx context.Context, id uuid.UUID, titl
 	}
 
 	return nil
+}
+
+func (r *ticketRepository) GetTicketsByUserId(ctx context.Context, userID string) ([]entity.Ticket, error) {
+	var tickets []entity.Ticket
+	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Preload("Tags").Find(&tickets).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return tickets, nil
 }

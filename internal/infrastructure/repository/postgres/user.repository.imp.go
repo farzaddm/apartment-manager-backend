@@ -87,3 +87,8 @@ func (r *userRepository) GetById(ctx context.Context, id string) (*entity.User, 
 
 	return &user, nil
 }
+
+func (r *userRepository) UpdateProfileImage(ctx context.Context, userId string, imagePath string) error {
+	err := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userId).Update("profile_image_url", imagePath).Error
+	return err
+}

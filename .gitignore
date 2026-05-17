@@ -39,6 +39,9 @@ $RECYCLE.BIN/
 !.vscode/extensions.json
 *.vsix
 
+# upload
+uploads/
+
 # Matin :)
 matintest
 

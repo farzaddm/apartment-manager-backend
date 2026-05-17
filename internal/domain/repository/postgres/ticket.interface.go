@@ -21,6 +21,8 @@ type TicketInterface interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) error
 	UpdateContent(ctx context.Context, id uuid.UUID, title, description, body string) error
+
+	GetTicketsByUserId(ctx context.Context, userID string) ([]entity.Ticket, error)
 }
 
 type TicketFilter struct {

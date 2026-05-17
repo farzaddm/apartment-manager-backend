@@ -4,9 +4,13 @@ import (
 	"apartment-manager-backend/internal/application/dto/user"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/pkg/response"
+	"fmt"
 	"net/http"
+	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserController struct {
@@ -69,4 +73,37 @@ func (u *UserController) GetById(c *gin.Context) {
 	}
 
 	response.Success(c, http.StatusOK, "profile_retrieved_successfully", user)
+}
+
+func (u *UserController) SetProfileImage(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusUnauthorized, "user_not_found_in_session", nil)
+		return
+	}
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "form_file_failed", err)
+		return
+	}
+
+	extension := filepath.Ext(file.Filename)
+	uniqueFileName := fmt.Sprintf("%s_%d%s", uuid.New().String(), time.Now().UnixNano(), extension)
+
+	uploadDir := "./uploads/profiles/"
+	filePath := filepath.Join(uploadDir, uniqueFileName)
+
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		response.Error(c, http.StatusInternalServerError, "failed_to_save_image_to_server_file_system", err)
+		return
+	}
+
+	err = u.userService.SetProfileImage(c.Request.Context(), fmt.Sprintf("%v", userId), filePath)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, "failed_to_save_image", err)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "profile_updated_successfully", nil)
 }

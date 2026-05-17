@@ -50,3 +50,7 @@ func (s *UserService) GetById(ctx context.Context, id string) (*userdto.UserProf
 	}
 	return profile, nil
 }
+
+func (s *UserService) SetProfileImage(ctx context.Context, userID string, filePath string) error {
+	return s.UserRepo.UpdateProfileImage(ctx, userID, filePath)
+}

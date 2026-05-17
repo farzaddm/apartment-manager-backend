@@ -4,6 +4,7 @@ import (
 	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/internal/domain/entity"
+	"fmt"
 
 	"apartment-manager-backend/pkg/response"
 	"net/http"
@@ -177,4 +178,20 @@ func (c *TicketController) GetFully(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, "ticket fetched successfully", ticket)
+}
+
+func (c *TicketController) GetUserTickets(ctx *gin.Context) {
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		response.Error(ctx, http.StatusUnauthorized, "user_id_not_found", nil)
+		return
+	}
+
+	tickets, err := c.ticketService.GetUserTickets(ctx.Request.Context(), fmt.Sprintf("%v", userID))
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, "failed_to_fetch_tickets", err)
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "tickets_fetched_successfully", tickets)
 }

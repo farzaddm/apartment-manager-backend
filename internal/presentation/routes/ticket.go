@@ -14,4 +14,5 @@ func SetUpTicketRoutes(g *gin.RouterGroup, handler *controller.TicketController)
 	g.PUT("/tickets/:id", handler.Update)
 	g.PATCH("/tickets/:id/status", handler.UpdateTicketStatus)
 	g.DELETE("/tickets/:id", handler.Delete)
+	g.GET("/tickets/me", handler.GetUserTickets)
 }
