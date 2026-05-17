@@ -9,8 +9,10 @@ import (
 )
 
 type Controllers struct {
-	Auth *controller.AuthController
-	User *controller.UserController
+	Auth      *controller.AuthController
+	User      *controller.UserController
+	Apartment *controller.ApartmentController
+	Ticket    *controller.TicketController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -28,6 +30,8 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Auth.Logout)
+		SetUpApartmentRoutes(protected, handler.Apartment)
+		SetUpTicketRoutes(protected, handler.Ticket)
 		protected.PUT("/user", handler.User.Update)
 		protected.DELETE("/user", handler.User.Delete)
 	}

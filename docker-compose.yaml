@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   postgres:
     image: postgres:${POSTGRES_VERSION}
     container_name: ${POSTGRES_CONTAINER}
@@ -24,24 +23,22 @@ services:
     networks:
       - backend
 
-
   redis:
-     image: redis:${REDIS_VERSION}
-     container_name: ${REDIS_CONTAINER}
-     restart: unless-stopped
-     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-     ports:
-       - "${REDIS_PORT}:6379"
-     volumes:
-       - redis_data:/data
-     networks:
-       - backend
-     healthcheck:
-       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-       interval: 10s
-       timeout: 5s
-       retries: 5
-
+    image: redis:${REDIS_VERSION}
+    container_name: ${REDIS_CONTAINER}
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:${PGADMIN_VERSION}
@@ -60,11 +57,9 @@ services:
     networks:
       - backend
 
-
 volumes:
   pg_data:
   redis_data:
-
 
 networks:
   backend:

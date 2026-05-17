@@ -1,0 +1,295 @@
+package postgres
+
+import (
+	"apartment-manager-backend/internal/domain/entity"
+	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"context"
+	"errors"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
+type apartmentRepository struct {
+	db *gorm.DB
+}
+
+func NewApartmentRepository(db *gorm.DB) domainRepo.ApartmentInterface {
+	return &apartmentRepository{
+		db: db,
+	}
+}
+
+// /////////////////// Create / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *apartmentRepository) Create(ctx context.Context, apartment *entity.Apartment) error {
+	return r.db.WithContext(ctx).Create(apartment).Error
+}
+
+// /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *apartmentRepository) Update(ctx context.Context, apartment *entity.Apartment) error {
+	result := r.db.WithContext(ctx).
+		Model(&entity.Apartment{}).
+		Where("id = ?", apartment.ID).
+		Updates(apartment)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+// /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *apartmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	result := r.db.WithContext(ctx).
+		Delete(&entity.Apartment{}, "id = ?", id)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+// /////////////////// EXIST / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *apartmentRepository) Exists(ctx context.Context, id uuid.UUID) (*bool, error) {
+	var count int64
+
+	err := r.db.WithContext(ctx).
+		Model(&entity.Apartment{}).
+		Where("id = ?", id).
+		Count(&count).Error
+
+	if err != nil {
+		return nil, err
+	}
+	b := count > 0
+	return &b, nil
+}
+
+// /////////////////// Get / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+
+func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	query := r.db.WithContext(ctx)
+
+	for _, relation := range relations {
+		query = query.Preload(relation)
+	}
+
+	err := query.
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+func (r *apartmentRepository) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Users").
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Announcements").
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+func (r *apartmentRepository) GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Rules").
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+	var apartment entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("InviteCodes").
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
+// /////////////////// LIST / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
+func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}
+
+func (r *apartmentRepository) ListWithRelations(ctx context.Context, relations ...string) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	query := r.db.WithContext(ctx)
+
+	for _, relation := range relations {
+		query = query.Preload(relation)
+	}
+
+	err := query.
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}
+
+func (r *apartmentRepository) ListWithUsers(ctx context.Context) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Users").
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}
+
+func (r *apartmentRepository) ListWithAnnouncements(ctx context.Context) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Announcements").
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}
+
+func (r *apartmentRepository) ListWithRules(ctx context.Context) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("Rules").
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}
+
+func (r *apartmentRepository) ListWithInviteCodes(ctx context.Context) ([]entity.Apartment, error) {
+	var apartments []entity.Apartment
+
+	err := r.db.WithContext(ctx).
+		Preload("InviteCodes").
+		Find(&apartments).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return apartments, nil
+}

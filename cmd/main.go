@@ -43,6 +43,8 @@ func main() {
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
 	jwtRepo := jwt.NewTokenService(cfg.JWT)
+	apartmentRepo := postgres.NewApartmentRepository(db)
+	ticketRepo := postgres.NewTicketRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -61,15 +63,21 @@ func main() {
 		cfg.JWT.RefreshExpireDays,
 	)
 	userService := service.NewUserService(userRepo, passwordHasher)
+	apartmentSrv := service.NewApartmentService(apartmentRepo)
+	ticketSrv := service.NewTicketService(ticketRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
 	userController := controller.NewUserController(userService)
+	apartmentController := controller.NewApartmentController(apartmentSrv)
+	tickerController := controller.NewTicketController(ticketSrv)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
-		Auth: authController,
-		User: userController,
+		Auth:      authController,
+		User:      userController,
+		Apartment: apartmentController,
+		Ticket:    tickerController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
