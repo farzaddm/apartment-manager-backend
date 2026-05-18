@@ -14,6 +14,7 @@ type Controllers struct {
 	Apartment  *controller.ApartmentController
 	Ticket     *controller.TicketController
 	InviteCode *controller.InviteCodeController
+	Tag        *controller.TagController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -28,6 +29,10 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/refresh", handler.Auth.Refresh)
 
 	r.GET("/user/:user_id", handler.User.GetById)
+
+	r.POST("/tags", handler.Tag.Create)
+	r.GET("/tags", handler.Tag.List)
+	r.DELETE("/tags/:id", handler.Tag.Delete)
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))

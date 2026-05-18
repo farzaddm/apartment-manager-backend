@@ -47,6 +47,7 @@ func main() {
 	ticketRepo := postgres.NewTicketRepository(db)
 	unitRepo := postgres.NewUnitRepository(db)
 	inviteCodeRepo := postgres.NewInviteCodeRepository(db)
+	tagRepo := postgres.NewTagRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -68,6 +69,7 @@ func main() {
 	apartmentSrv := service.NewApartmentService(apartmentRepo)
 	ticketSrv := service.NewTicketService(ticketRepo)
 	inviteCodeService := service.NewInviteCodeService(inviteCodeRepo, unitRepo, apartmentRepo)
+	tagService := service.NewTagService(tagRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
@@ -75,6 +77,7 @@ func main() {
 	apartmentController := controller.NewApartmentController(apartmentSrv)
 	tickerController := controller.NewTicketController(ticketSrv)
 	inviteCodeController := controller.NewInviteCodeController(inviteCodeService)
+	tagController := controller.NewTagController(tagService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -83,6 +86,7 @@ func main() {
 		Apartment:  apartmentController,
 		Ticket:     tickerController,
 		InviteCode: inviteCodeController,
+		Tag:        tagController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
