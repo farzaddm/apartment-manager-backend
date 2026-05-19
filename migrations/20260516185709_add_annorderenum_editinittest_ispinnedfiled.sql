@@ -1,6 +1,6 @@
 -- +goose Up
 CREATE TYPE announcement_order AS ENUM (
-    'warning'
+    'warning',
     'very_important',
     'important',
     'other'

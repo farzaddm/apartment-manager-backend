@@ -46,7 +46,7 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) Update(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) Delete(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *ApartmentController) Delete(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) GetByID(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -116,7 +116,7 @@ func (c *ApartmentController) GetByID(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) GetByIDWithUsers(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -134,7 +134,7 @@ func (c *ApartmentController) GetByIDWithUsers(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) GetByIDWithRules(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -152,7 +152,7 @@ func (c *ApartmentController) GetByIDWithRules(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) GetByIDWithAnnouncements(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
@@ -170,7 +170,7 @@ func (c *ApartmentController) GetByIDWithAnnouncements(ctx *gin.Context) {
 }
 
 func (c *ApartmentController) GetByIDWithInviteCodes(ctx *gin.Context) {
-	idParam := ctx.Param("id")
+	idParam := ctx.Param("apartment_id")
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {

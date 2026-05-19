@@ -9,6 +9,7 @@ import (
 
 type TagInterface interface {
 	Create(ctx context.Context, tag *entity.Tag) error
+	FindByIDs(ctx context.Context, ids []uuid.UUID) ([]entity.Tag, error)
 	FindAll(ctx context.Context) ([]entity.Tag, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
