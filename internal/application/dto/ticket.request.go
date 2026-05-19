@@ -7,11 +7,12 @@ import (
 )
 
 type CreateTicketRequest struct {
-	UserID      *uuid.UUID            `json:"user_id"`
-	Title       string                `json:"title" binding:"required"`
-	Description string                `json:"description"`
-	Body        string                `json:"body"  binding:"required"`
-	Category    entity.TicketCategory `json:"category" binding:"required"`
+	UserID        *uuid.UUID                 `json:"user_id"`
+	Title         string                     `json:"title" binding:"required"`
+	Description   string                     `json:"description"`
+	Body          string                     `json:"body"  binding:"required"`
+	Category      entity.TicketCategory      `json:"category" binding:"required"`
+	Accessability entity.TicketAccessability `json:"accessability" binding:"required"`
 }
 
 type UpdateTicketRequest struct {
