@@ -43,6 +43,12 @@ func main() {
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
 	jwtRepo := jwt.NewTokenService(cfg.JWT)
+	apartmentRepo := postgres.NewApartmentRepository(db)
+	ticketRepo := postgres.NewTicketRepository(db)
+	unitRepo := postgres.NewUnitRepository(db)
+	inviteCodeRepo := postgres.NewInviteCodeRepository(db)
+	tagRepo := postgres.NewTagRepository(db)
+	announcementRepo := postgres.NewAnnouncementRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -60,16 +66,31 @@ func main() {
 		passwordHasher,
 		cfg.JWT.RefreshExpireDays,
 	)
-	profileService := service.NewProfileService(userRepo)
+	userService := service.NewUserService(userRepo, passwordHasher)
+	apartmentSrv := service.NewApartmentService(apartmentRepo)
+	ticketSrv := service.NewTicketService(ticketRepo)
+	inviteCodeService := service.NewInviteCodeService(inviteCodeRepo, unitRepo, apartmentRepo)
+	tagService := service.NewTagService(tagRepo)
+	announcementService := service.NewAnnouncementService(announcementRepo, tagRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
-	profileController := controller.NewProfileController(profileService)
+	userController := controller.NewUserController(userService)
+	apartmentController := controller.NewApartmentController(apartmentSrv)
+	tickerController := controller.NewTicketController(ticketSrv)
+	inviteCodeController := controller.NewInviteCodeController(inviteCodeService)
+	tagController := controller.NewTagController(tagService)
+	announcementController := controller.NewAnnouncementController(announcementService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
-		Auth:    authController,
-		Profile: profileController,
+		Auth:         authController,
+		User:         userController,
+		Apartment:    apartmentController,
+		Ticket:       tickerController,
+		InviteCode:   inviteCodeController,
+		Tag:          tagController,
+		Announcement: announcementController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)

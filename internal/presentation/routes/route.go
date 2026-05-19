@@ -9,24 +9,54 @@ import (
 )
 
 type Controllers struct {
-	Auth    *controller.AuthController
-	Profile *controller.ProfileController
+	Auth         *controller.AuthController
+	User         *controller.UserController
+	Apartment    *controller.ApartmentController
+	Ticket       *controller.TicketController
+	InviteCode   *controller.InviteCodeController
+	Tag          *controller.TagController
+	Announcement *controller.AnnouncementController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
 	r := gin.New()
+
+	r.Static("/uploads", "./uploads")
 
 	r.POST("/send-otp", handler.Auth.SendOTP)
 	r.POST("/verify-otp", handler.Auth.VerifyOTP)
 	r.POST("/register", handler.Auth.Register)
 	r.POST("/login", handler.Auth.Login)
 	r.POST("/refresh", handler.Auth.Refresh)
+	r.GET("/user/:user_id", handler.User.GetById)
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Auth.Logout)
-		protected.GET("/me", handler.Profile.GetMe)
+		protected.PUT("/user", handler.User.Update)
+		protected.DELETE("/user", handler.User.Delete)
+		protected.POST("/user/profile-image/", handler.User.SetProfileImage)
+		protected.POST("/invite-code/validate", handler.InviteCode.Validate)
+		protected.GET("/tags", handler.Tag.List)
+
+		adminOnly := protected.Group("/")
+		adminOnly.Use(middleware.RolesAuthorize("admin"))
+
+		managementGroup := protected.Group("/")
+		managementGroup.Use(middleware.RolesAuthorize("admin", "manager"))
+
+		SetUpApartmentRoutes(protected, adminOnly, handler.Apartment)
+		SetUpTicketRoutes(protected, managementGroup, handler.Ticket)
+
+		managementGroup.POST("/invite-code", handler.InviteCode.Create)
+		managementGroup.POST("/tags", handler.Tag.Create)
+		managementGroup.DELETE("/tags/:id", handler.Tag.Delete)
+
+		managementGroup.POST("/apartments/:apartment_id/announcements", handler.Announcement.Create)
+		protected.GET("/apartments/:apartment_id/announcements/:id", handler.Announcement.Get)
+		managementGroup.PUT("/apartments/:apartment_id/announcements/:id", handler.Announcement.Update)
+		managementGroup.DELETE("/apartments/:apartment_id/announcements/:id", handler.Announcement.Delete)
 	}
 
 	return r

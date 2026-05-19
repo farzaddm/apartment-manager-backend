@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	userdto "apartment-manager-backend/internal/application/dto/user"
 	"context"
 	"errors"
 
@@ -15,9 +16,7 @@ type userRepository struct {
 }
 
 func NewUserRepository(db *gorm.DB) domainRepo.UserInterface {
-	return &userRepository{
-		db: db,
-	}
+	return &userRepository{db: db}
 }
 
 func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
@@ -68,15 +67,28 @@ func (r *userRepository) ExistPhone(ctx context.Context, phone string) (bool, er
 	return count > 0, nil
 }
 
-func (r *userRepository) GetByID(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepository) Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error {
+	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Updates(user).Error
+}
+
+func (r *userRepository) Delete(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Delete(&entity.User{}).Error
+}
+
+func (r *userRepository) GetById(ctx context.Context, id string) (*entity.User, error) {
 	var user entity.User
 	err := r.db.WithContext(ctx).First(&user, "id = ?", id).Error
-
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
+
 	return &user, nil
+}
+
+func (r *userRepository) UpdateProfileImage(ctx context.Context, userId string, imagePath string) error {
+	err := r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", userId).Update("profile_image_url", imagePath).Error
+	return err
 }

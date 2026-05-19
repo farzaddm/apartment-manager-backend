@@ -1,0 +1,15 @@
+package postgres
+
+import (
+	"apartment-manager-backend/internal/domain/entity"
+	"context"
+)
+
+type InviteCodeInterface interface {
+	Create(ctx context.Context, inviteCode *entity.InviteCode) error
+
+	GetActiveInviteCode(ctx context.Context, apartmentID string, unitID string) (*entity.InviteCode, error)
+	GetByCode(ctx context.Context, code string) (*entity.InviteCode, error)
+
+	AssignUserToUnitAndApartment(ctx context.Context, userID string, apartmentID string, unitID string) error
+}
