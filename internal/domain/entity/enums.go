@@ -46,8 +46,6 @@ const (
 	RulePoolPolicyCategory       RuleCategory = "pool_policy"
 	RuleRuleOtherCategory        RuleCategory = "other"
 )
-<<<<<<< Updated upstream
-=======
 
 type AnnouncementOrder string
 
@@ -64,4 +62,3 @@ const (
 	PublicTicket  TicketAccessability = "public"
 	PrivateTicket TicketAccessability = "private"
 )
->>>>>>> Stashed changes
