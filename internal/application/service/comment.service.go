@@ -4,6 +4,7 @@ import (
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -11,6 +12,17 @@ import (
 )
 
 type CommentService interface {
+	Create(ctx context.Context, comment *entity.Comment) error
+
+	Update(ctx context.Context, comment *entity.Comment) error
+
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	GetByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error)
+
+	ListByTicketID(ctx context.Context, ticketID uuid.UUID) ([]entity.Comment, error)
+
+	GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error)
 }
 
 type commentService struct {
@@ -21,7 +33,7 @@ func NewCommentService(commentRepo domainRepo.CommentInterface) CommentService {
 	return &commentService{commentRepo: commentRepo}
 }
 
-func (s *commentService) Create(comment *entity.Comment) error {
+func (s *commentService) Create(ctx context.Context, comment *entity.Comment) error {
 	lastOrder, err := s.commentRepo.GetLastOrderByTicketID(comment.TicketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -40,8 +52,23 @@ func (s *commentService) Create(comment *entity.Comment) error {
 	return s.commentRepo.Create(comment)
 }
 
-func (s *commentService) Update(comment *entity.Comment) error {
-	err := s.commentRepo.Update(comment)
+// func (s *commentService) Update(ctx context.Context, comment *dto.UpdateCommentRequest) error {
+// 	err := s.commentRepo.Update(comment)
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return service_error.ErrCommentNotFound
+// 		}
+// 		return err
+// 	}
+// 	return nil
+// }
+
+func (s *commentService) Delete(ctx context.Context, id uuid.UUID, baseUserID uuid.UUID, role entity.UserRole) error {
+	c, err := s.GetByID(id, baseUserID, role)
+	if err != nil {
+		return err
+	}
+	err = s.commentRepo.Delete(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return service_error.ErrCommentNotFound
@@ -51,18 +78,7 @@ func (s *commentService) Update(comment *entity.Comment) error {
 	return nil
 }
 
-func (s *commentService) Delete(id uuid.UUID) error {
-	err := s.commentRepo.Delete(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrCommentNotFound
-		}
-		return err
-	}
-	return nil
-}
-
-func (s *commentService) GetByID(id uuid.UUID) (*entity.Comment, error) {
+func (s *commentService) GetByID(ctx context.Context, id uuid.UUID, baseUserID uuid.UUID, role entity.UserRole) (*entity.Comment, error) {
 	c, err := s.commentRepo.GetByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -70,10 +86,15 @@ func (s *commentService) GetByID(id uuid.UUID) (*entity.Comment, error) {
 		}
 		return nil, err
 	}
+	if c.UserID == nil || *c.UserID != baseUserID {
+		if !(role == entity.RoleAdmin || role == entity.RoleManager) {
+			return nil, service_error.ErrCommentUnauthorizedAccess
+		}
+	}
 	return c, nil
 }
 
-func (s *commentService) ListByTicketID(ticketID uuid.UUID) ([]entity.Comment, error) {
+func (s *commentService) ListByTicketID(ctx context.Context, ticketID uuid.UUID, baseUserID uuid.UUID, role entity.UserRole) ([]entity.Comment, error) {
 	l, err := s.commentRepo.ListByTicketID(ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -81,10 +102,19 @@ func (s *commentService) ListByTicketID(ticketID uuid.UUID) ([]entity.Comment, e
 		}
 		return nil, err
 	}
+	new_l := make([]entity.Comment, 0)
+	for i := range l {
+		if l[i].UserID == nil || *l[i].UserID != baseUserID {
+			if !(role == entity.RoleAdmin || role == entity.RoleManager) {
+				continue
+			}
+		}
+		new_l = append(new_l, l[i])
+	}
 	return l, nil
 }
 
-func (s *commentService) GetLastOrderByTicketID(ticketID uuid.UUID) (*int, error) {
+func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error) {
 	count, err := s.commentRepo.GetLastOrderByTicketID(ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
