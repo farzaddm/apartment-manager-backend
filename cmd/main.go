@@ -11,13 +11,9 @@ import (
 	"apartment-manager-backend/internal/presentation/controller"
 	"apartment-manager-backend/internal/presentation/routes"
 	"apartment-manager-backend/pkg/hasher"
-	"fmt"
 	"log"
 	"net/http"
 )
-
-const TEST_AND_USE_HASHER bool = true           //TODO : Remove This is Release Mode
-const test_password_for_debug string = "123456" //TODO : Remove This is Release Mode
 
 func main() {
 
@@ -60,15 +56,6 @@ func main() {
 
 	// ----- Hasher -----
 	passwordHasher := hasher.NewBcryptHasher()
-
-	//TODO : Remove This is Release Mode
-	if TEST_AND_USE_HASHER {
-		s, err := passwordHasher.Hash(test_password_for_debug)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("test-hash-password:%s*\n",s)
-	}
 
 	// --- SERVICES ---
 	authService := service.NewAuthService(

@@ -52,28 +52,7 @@ VALUES
     'a0000000-0000-0000-0000-000000000000', 
     'Fiona', 'Gallagher', 'fiona_r4', 'fiona@gmail.com', '+14165550006', 
     '$2b$12$LRY8b1Bf2h...', 'resident', 'female'
-),
-(
-    '77777777-7777-7777-7777-777777777777', 
-    'a0000000-0000-0000-0000-000000000000', 
-    'Voldemort', 'VoldemortianResident', 'voldemort_res', 'voldemort@gmail.com', '+14165550097', 
-    '$2a$10$5gfYfx4Teb7ApWajR404beT5su6ueE2I4/KgHlVm.D4lKXUMtxfa6', 'resident', 'male'
-), -- password is 123456 TODO
---TODO Remove This in Release Mode
-(
-    '88888888-8888-8888-8888-888888888888', 
-    'a0000000-0000-0000-0000-000000000000', 
-    'Voldemort', 'VoldemortianManager', 'voldemort_man', 'voldemort@gmail.com', '+14165550999', 
-    '$2a$10$5gfYfx4Teb7ApWajR404beT5su6ueE2I4/KgHlVm.D4lKXUMtxfa6', 'manager', 'male'
-), -- password is 123456
---TODO Remove This in Release Mode
-(
-    '99999999-9999-9999-9999-999999999999', 
-    'a0000000-0000-0000-0000-000000000000', 
-    'Voldemort', 'VoldemortianAdmin', 'voldemort_ad', 'voldemort@gmail.com', '+14165559797', 
-    '$2a$10$5gfYfx4Teb7ApWajR404beT5su6ueE2I4/KgHlVm.D4lKXUMtxfa6', 'admin', 'male'
-); -- password is 123456
---TODO Remove This in Release Mode
+);
 
 -- 3. Insert Units (6 units assigned to various users/empty)
 INSERT INTO units (id, apartment_id, user_id, unit_number, floor)
