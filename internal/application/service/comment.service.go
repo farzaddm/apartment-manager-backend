@@ -13,7 +13,7 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, comment *dto.CreateCommentRequest) error
+	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) error
 
 	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) error
 
@@ -33,8 +33,8 @@ func NewCommentService(commentRepo domainRepo.CommentInterface, ticketRepo domai
 	return &commentService{commentRepo: commentRepo, ticketRepo: ticketRepo}
 }
 
-func (s *commentService) Create(ctx context.Context, req *dto.CreateCommentRequest) error {
-	ticket, err := s.ticketRepo.GetByID(ctx, req.TicketID)
+func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) error {
+	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return service_error.ErrTicketNotFound
@@ -42,19 +42,21 @@ func (s *commentService) Create(ctx context.Context, req *dto.CreateCommentReque
 		return err
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
+
 	if ticket.Accessability == entity.PrivateTicket && role == entity.RoleResident {
 		return service_error.ErrCommentUnauthorizedAccess
 	}
 
-	lastOrder, err := s.commentRepo.GetLastOrderByTicketID(ctx, req.TicketID)
+	lastOrder, err := s.commentRepo.GetLastOrderByTicketID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return service_error.ErrCommentNotFound
@@ -68,7 +70,7 @@ func (s *commentService) Create(ctx context.Context, req *dto.CreateCommentReque
 	// }
 
 	cr_comment := &entity.Comment{
-		TicketID:       req.TicketID,
+		TicketID:       ticketID,
 		Body:           req.Body,
 		CommittedOrder: *lastOrder + 1,
 	}
@@ -84,14 +86,16 @@ func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.Upda
 		return service_error.ErrTicketOfCommentOrCommentNotFound
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
-		return service_error.ErrUserRoleNotFoundInContext
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+	if err != nil {
+		return service_error.ErrCommonParseStrToUUID
 	}
+
 	if comm.UserID == nil || *comm.UserID == baseUserID {
 		return service_error.ErrCommentUnauthorizedAccess
 	}
@@ -117,14 +121,22 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 		return service_error.ErrCommentNotFound
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+	if err != nil {
+		return service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
+
 	if (comm.UserID == nil || *comm.UserID == baseUserID) && role == entity.RoleResident {
 		return service_error.ErrCommentUnauthorizedAccess
 	}
@@ -147,14 +159,21 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Com
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
 	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID == baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
@@ -177,14 +196,21 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uu
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
 	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID == baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}

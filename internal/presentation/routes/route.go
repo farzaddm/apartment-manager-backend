@@ -16,6 +16,7 @@ type Controllers struct {
 	InviteCode   *controller.InviteCodeController
 	Tag          *controller.TagController
 	Announcement *controller.AnnouncementController
+	Comment      *controller.CommentController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -48,6 +49,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 
 		SetUpApartmentRoutes(protected, adminOnly, handler.Apartment)
 		SetUpTicketRoutes(protected, managementGroup, handler.Ticket)
+		SetUpCommentRoutes(protected, handler.Comment)
 
 		managementGroup.POST("/invite-code", handler.InviteCode.Create)
 		managementGroup.POST("/tags", handler.Tag.Create)

@@ -13,12 +13,14 @@ import (
 )
 
 type TicketController struct {
-	ticketService service.TicketService
+	ticketService  service.TicketService
+	commentService service.CommentService
 }
 
-func NewTicketController(ticketService service.TicketService) *TicketController {
+func NewTicketController(ticketService service.TicketService, commentService service.CommentService) *TicketController {
 	return &TicketController{
-		ticketService: ticketService,
+		ticketService:  ticketService,
+		commentService: commentService,
 	}
 }
 
@@ -197,4 +199,26 @@ func (c *TicketController) GetUserTickets(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, "tickets_fetched_successfully", tickets)
+}
+
+func (c *TicketController) CreateComment(ctx *gin.Context) {
+	ticketID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
+		return
+	}
+
+	var req dto.CreateCommentRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		return
+	}
+
+	err = c.commentService.Create(ctx, ticketID, &req)
+	if err != nil {
+		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_comment", err)
+		return
+	}
+
+	response.Success(ctx, http.StatusCreated, "comment_created_successfully", nil)
 }

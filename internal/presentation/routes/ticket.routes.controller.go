@@ -16,4 +16,7 @@ func SetUpTicketRoutes(publicG *gin.RouterGroup, managerG *gin.RouterGroup, hand
 	publicG.DELETE("/tickets/:id", handler.Delete) //TODO: Check base user id with target user id + and is it managerG+
 
 	managerG.PATCH("/tickets/:id/status", handler.UpdateTicketStatus)
+
+	publicG.POST("/tickets/:id/comments", handler.CreateComment)
+
 }
