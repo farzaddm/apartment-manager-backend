@@ -14,7 +14,7 @@ import (
 )
 
 type TicketService interface {
-	Create(ctx context.Context, ticket *entity.Ticket) error
+	Create(ctx context.Context, ticket *dto.CreateTicketRequest) error
 
 	Delete(ctx context.Context, id uuid.UUID) error
 
@@ -38,15 +38,23 @@ func NewTicketService(repo domainRepo.TicketInterface) TicketService {
 	return &ticketService{repo: repo}
 }
 
-func (s *ticketService) Create(ctx context.Context, ticket *entity.Ticket) error {
+func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) error {
 	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if baseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
 
 	//TODO: nil situation
-	if ticket.UserID != nil && baseUserID == *ticket.UserID {
+	if req.UserID != nil && baseUserID == *req.UserID {
 		return service_error.ErrTicketUnauthorizedAccess
+	}
+	ticket := &entity.Ticket{
+		UserID:        req.UserID,
+		Title:         req.Title,
+		Description:   req.Description,
+		Body:          req.Body,
+		Category:      req.Category,
+		Accessability: req.Accessability,
 	}
 	return s.repo.Create(ctx, ticket)
 }

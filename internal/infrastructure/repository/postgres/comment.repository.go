@@ -3,6 +3,7 @@ package postgres
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -17,12 +18,16 @@ func NewCommentRepository(db *gorm.DB) domainRepo.CommentInterface {
 	return &commentRepository{db: db}
 }
 
-func (r *commentRepository) Create(comment *entity.Comment) error {
-	return r.db.Create(comment).Error
+func (r *commentRepository) Create(ctx context.Context, comment *entity.Comment) error {
+	return r.db.WithContext(ctx).Create(comment).Error
 }
 
-func (r *commentRepository) Update(comment *entity.Comment) error {
-	result := r.db.Save(comment)
+func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, comment *entity.Comment) error {
+	result := r.db.WithContext(ctx).
+		Model(&entity.Comment{}).
+		Where("id = ?", id).
+		Updates(comment)
+
 	if result.Error != nil {
 		return result.Error
 	}
@@ -34,8 +39,8 @@ func (r *commentRepository) Update(comment *entity.Comment) error {
 	return nil
 }
 
-func (r *commentRepository) Delete(id uuid.UUID) error {
-	result := r.db.Delete(&entity.Comment{}, "id = ?", id)
+func (r *commentRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	result := r.db.WithContext(ctx).Delete(&entity.Comment{}, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -46,9 +51,9 @@ func (r *commentRepository) Delete(id uuid.UUID) error {
 
 	return nil
 }
-func (r *commentRepository) GetByID(id uuid.UUID) (*entity.Comment, error) {
+func (r *commentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
 	var comment entity.Comment
-	err := r.db.Preload("User").Preload("Ticket").First(&comment, "id = ?", id).Error
+	err := r.db.WithContext(ctx).Preload("User").Preload("Ticket").First(&comment, "id = ?", id).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -59,9 +64,9 @@ func (r *commentRepository) GetByID(id uuid.UUID) (*entity.Comment, error) {
 	return &comment, nil
 }
 
-func (r *commentRepository) ListByTicketID(ticketID uuid.UUID) ([]entity.Comment, error) {
+func (r *commentRepository) ListByTicketID(ctx context.Context, ticketID uuid.UUID) ([]entity.Comment, error) {
 	var comments []entity.Comment
-	err := r.db.
+	err := r.db.WithContext(ctx).
 		Where("ticket_id = ?", ticketID).
 		Order("committed_order ASC").
 		Preload("User").
@@ -76,9 +81,9 @@ func (r *commentRepository) ListByTicketID(ticketID uuid.UUID) ([]entity.Comment
 	return comments, err
 }
 
-func (r *commentRepository) GetLastOrderByTicketID(ticketID uuid.UUID) (*int, error) {
+func (r *commentRepository) GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error) {
 	var lastOrder int
-	err := r.db.
+	err := r.db.WithContext(ctx).
 		Model(&entity.Comment{}).
 		Where("ticket_id = ?", ticketID).
 		Select("COALESCE(MAX(committed_order), 0)").
@@ -91,4 +96,40 @@ func (r *commentRepository) GetLastOrderByTicketID(ticketID uuid.UUID) (*int, er
 		return nil, err
 	}
 	return &lastOrder, err
+}
+
+func (r *commentRepository) GetWithUser(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+	var comment entity.Comment
+	err := r.db.WithContext(ctx).Preload("User").First(&comment, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &comment, err
+}
+
+func (r *commentRepository) GetWithTicket(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+	var comment entity.Comment
+	err := r.db.WithContext(ctx).Preload("Ticket").First(&comment, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &comment, err
+}
+
+func (r *commentRepository) GetWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+	var comment entity.Comment
+	err := r.db.WithContext(ctx).Preload("User").Preload("Ticket").First(&comment, "id = ?", id).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &comment, err
 }

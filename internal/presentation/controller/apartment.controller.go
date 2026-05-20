@@ -3,7 +3,6 @@ package controller
 import (
 	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
-	"apartment-manager-backend/internal/domain/entity"
 	"apartment-manager-backend/pkg/response"
 	"net/http"
 
@@ -29,7 +28,7 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 		return
 	}
 
-	apartment := &entity.Apartment{
+	apartment := &dto.CreateApartmentRequest{
 		Name:       req.Name,
 		Province:   req.Province,
 		City:       req.City,
@@ -61,10 +60,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		return
 	}
 
-	apartment := &entity.Apartment{
-		BaseModel: entity.BaseModel{
-			ID: id,
-		},
+	apartment := &dto.UpdateApartmentRequest{
 		Name:       req.Name,
 		Province:   req.Province,
 		City:       req.City,
@@ -72,7 +68,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	if err := c.apartmentService.Update(ctx, apartment); err != nil {
+	if err := c.apartmentService.Update(ctx,id, apartment); err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_update_apartment", err)
 		return
 	}

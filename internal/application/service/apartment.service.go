@@ -1,6 +1,7 @@
 package service
 
 import (
+	"apartment-manager-backend/internal/application/dto"
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
@@ -12,8 +13,8 @@ import (
 )
 
 type ApartmentService interface {
-	Create(ctx context.Context, apartment *entity.Apartment) error
-	Update(ctx context.Context, apartment *entity.Apartment) error
+	Create(ctx context.Context, req *dto.CreateApartmentRequest) error
+	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
 
@@ -43,12 +44,26 @@ func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentS
 	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
-func (s *apartmentService) Create(ctx context.Context, apartment *entity.Apartment) error {
+func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) error {
+	apartment := &entity.Apartment{
+		Name:       req.Name,
+		Province:   req.Province,
+		City:       req.City,
+		Address:    req.Address,
+		PostalCode: req.PostalCode,
+	}
 	return s.apartmentRepo.Create(ctx, apartment)
 }
 
-func (s *apartmentService) Update(ctx context.Context, apartment *entity.Apartment) error {
-	err := s.apartmentRepo.Update(ctx, apartment)
+func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error {
+	apartment := &entity.Apartment{
+		Name:       req.Name,
+		Province:   req.Province,
+		City:       req.City,
+		Address:    req.Address,
+		PostalCode: req.PostalCode,
+	}
+	err := s.apartmentRepo.Update(ctx, id, apartment)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return service_error.ErrApartmentNotFound

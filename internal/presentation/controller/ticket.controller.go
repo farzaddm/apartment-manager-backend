@@ -3,7 +3,6 @@ package controller
 import (
 	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
-	"apartment-manager-backend/internal/domain/entity"
 	"fmt"
 
 	"apartment-manager-backend/pkg/response"
@@ -31,7 +30,7 @@ func (c *TicketController) Create(ctx *gin.Context) {
 		return
 	}
 
-	ticket := &entity.Ticket{
+	ticket := &dto.CreateTicketRequest{
 		UserID:        req.UserID, // must be included
 		Title:         req.Title,
 		Description:   req.Description,
