@@ -68,7 +68,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	if err := c.apartmentService.Update(ctx,id, apartment); err != nil {
+	if err := c.apartmentService.Update(ctx, id, apartment); err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_update_apartment", err)
 		return
 	}

@@ -21,6 +21,8 @@ type Controllers struct {
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
 	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 
 	r.Static("/uploads", "./uploads")
 
