@@ -13,6 +13,8 @@ import (
 	"apartment-manager-backend/pkg/hasher"
 	"log"
 	"net/http"
+
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -39,6 +41,7 @@ func main() {
 	}
 
 	// --- REPOSITORIES ---
+
 	userRepo := postgres.NewUserRepository(db)
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
@@ -99,6 +102,14 @@ func main() {
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
 
+	//TODO : THIS IMP IS JUST FOR TEST BUT IN RELEASE VER WE NEED TO IN MORE PROPER IMP
+	InitManagersAndAdminAndResident(db, passwordHasher)
+
 	log.Println("server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+// TODO : Move this Func to right directories and REFACTOR IT
+func InitManagersAndAdminAndResident(db *gorm.DB, passwordHasher *hasher.BcryptHasher) {
+
 }
