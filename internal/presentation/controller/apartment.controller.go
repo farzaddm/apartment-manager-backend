@@ -3,7 +3,9 @@ package controller
 import (
 	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
+	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/pkg/response"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,12 +38,20 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	if err := c.apartmentService.Create(ctx, apartment); err != nil {
+	cr_apartment, err := c.apartmentService.Create(ctx, apartment)
+	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_apartment", err)
 		return
 	}
-
-	response.Success(ctx, http.StatusCreated, "apartment_created_successfully", apartment)
+	data := dto.CreateApartmentResponse{
+		ID:         cr_apartment.ID,
+		Name:       cr_apartment.Name,
+		Province:   cr_apartment.Province,
+		City:       cr_apartment.City,
+		Address:    cr_apartment.Address,
+		PostalCode: cr_apartment.PostalCode,
+	}
+	response.Success(ctx, http.StatusCreated, "apartment_created_successfully", data)
 }
 
 func (c *ApartmentController) Update(ctx *gin.Context) {
@@ -69,11 +79,15 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 	}
 
 	if err := c.apartmentService.Update(ctx, id, apartment); err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_update_apartment", err)
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", apartment)
+	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", nil)
 }
 
 func (c *ApartmentController) Delete(ctx *gin.Context) {
@@ -86,6 +100,10 @@ func (c *ApartmentController) Delete(ctx *gin.Context) {
 	}
 
 	if err := c.apartmentService.Delete(ctx, id); err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_delete_apartment", err)
 		return
 	}
@@ -104,6 +122,10 @@ func (c *ApartmentController) GetByID(ctx *gin.Context) {
 
 	apartment, err := c.apartmentService.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment", err)
 		return
 	}
@@ -122,6 +144,10 @@ func (c *ApartmentController) GetByIDWithUsers(ctx *gin.Context) {
 
 	apartment, err := c.apartmentService.GetWithUsers(ctx, id)
 	if err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_users", err)
 		return
 	}
@@ -140,6 +166,10 @@ func (c *ApartmentController) GetByIDWithRules(ctx *gin.Context) {
 
 	apartment, err := c.apartmentService.GetWithRules(ctx, id)
 	if err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_rules", err)
 		return
 	}
@@ -152,12 +182,17 @@ func (c *ApartmentController) GetByIDWithAnnouncements(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
+
 		response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id", err)
 		return
 	}
 
 	apartment, err := c.apartmentService.GetWithAnnouncements(ctx, id)
 	if err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_announcements", err)
 		return
 	}
@@ -176,6 +211,10 @@ func (c *ApartmentController) GetByIDWithInviteCodes(ctx *gin.Context) {
 
 	apartment, err := c.apartmentService.GetWithInviteCodes(ctx, id)
 	if err != nil {
+		if errors.Is(err, service_error.ErrApartmentNotFound) {
+			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+			return
+		}
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_invite_codes", err)
 		return
 	}

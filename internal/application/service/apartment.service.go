@@ -13,7 +13,7 @@ import (
 )
 
 type ApartmentService interface {
-	Create(ctx context.Context, req *dto.CreateApartmentRequest) error
+	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*entity.Apartment, error)
 	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
@@ -44,7 +44,7 @@ func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentS
 	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
-func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) error {
+func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*entity.Apartment, error) {
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -52,7 +52,8 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 		Address:    req.Address,
 		PostalCode: req.PostalCode,
 	}
-	return s.apartmentRepo.Create(ctx, apartment)
+	err := s.apartmentRepo.Create(ctx, apartment)
+	return apartment, err
 }
 
 func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error {

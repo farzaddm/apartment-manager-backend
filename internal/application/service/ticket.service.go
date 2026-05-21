@@ -14,7 +14,7 @@ import (
 )
 
 type TicketService interface {
-	Create(ctx context.Context, ticket *dto.CreateTicketRequest) error
+	Create(ctx context.Context, ticket *dto.CreateTicketRequest) (*entity.Ticket, error)
 
 	Delete(ctx context.Context, id uuid.UUID) error
 
@@ -38,15 +38,21 @@ func NewTicketService(repo domainRepo.TicketInterface) TicketService {
 	return &ticketService{repo: repo}
 }
 
-func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) error {
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
-		return service_error.ErrUserIDNotFoundInContext
+func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*entity.Ticket, error) {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
+		return nil, service_error.ErrUserIDNotFoundInContext
+	}
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
 	}
 
 	//TODO: nil situation
 	if req.UserID != nil && baseUserID == *req.UserID {
-		return service_error.ErrTicketUnauthorizedAccess
+		return nil, service_error.ErrTicketUnauthorizedAccess
 	}
 	ticket := &entity.Ticket{
 		UserID:        req.UserID,
@@ -56,18 +62,27 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Category:      req.Category,
 		Accessability: req.Accessability,
 	}
-	return s.repo.Create(ctx, ticket)
+	err = s.repo.Create(ctx, ticket)
+	return ticket, err
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
 
 	//TODO: nil situation
 	ticket, err := s.GetByIDSuperAccess(ctx, id)
@@ -101,14 +116,23 @@ func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Tick
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
+
 	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
@@ -141,14 +165,22 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
 	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
@@ -171,14 +203,22 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 		return nil, err
 	}
 
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
-	role := ctx.Value("role") // IT MUST BE EXIST!
-	if role == nil {
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
+	rawRole := ctx.Value("role") // IT MUST BE EXIST!
+	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
+	role := rawRole.(entity.UserRole)
 
 	new_fl := make([]domainRepo.TicketWithCommentCount, 0)
 	for i := range fl {
@@ -193,9 +233,15 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
-	baseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
-	if baseUserID == nil {
+	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
+	}
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return service_error.ErrCommonParseStrToUUID
 	}
 
 	ticket, err := s.GetByIDSuperAccess(ctx, id) // it must retrieve a record for checking after that

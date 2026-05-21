@@ -15,6 +15,17 @@ type CreateTicketRequest struct {
 	Accessability entity.TicketAccessability `json:"accessability" binding:"required"`
 }
 
+type CreateTicketResponse struct {
+	ID            uuid.UUID                  `json:"id"`
+	UserID        *uuid.UUID                 `json:"user_id"`
+	Title         string                     `json:"title"`
+	Description   string                     `json:"description"`
+	Body          string                     `json:"body" `
+	Category      entity.TicketCategory      `json:"category"`
+	Accessability entity.TicketAccessability `json:"accessability"`
+	Status        entity.TicketStatus        `json:"status"`
+}
+
 type UpdateTicketRequest struct {
 	Title       string                `json:"title"`
 	Description string                `json:"description"`

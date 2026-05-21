@@ -8,7 +8,7 @@ import (
 
 func SetUpTicketRoutes(publicG *gin.RouterGroup, managerG *gin.RouterGroup, handler *controller.TicketController) {
 	publicG.GET("/tickets/:id", handler.GetByID)        //TODO:CHECK Public/Private field + and is it managerG+
-	publicG.GET("/tickets/:id/fully", handler.GetFully) //TODO:CHECK Public/Private field + and is it managerG+
+	publicG.GET("/tickets/:id/fully", handler.GetFully) //TODO:CHECK Public/Private field + and is it managerG+ //TODO choose better path name
 	publicG.GET("/tickets", handler.List)               //TODO:Filter By Public/Private field situation + and is it managerG+
 	publicG.GET("/tickets/me", handler.GetUserTickets)
 	publicG.POST("/tickets", handler.Create)       //TODO: Check base user id with target user id +

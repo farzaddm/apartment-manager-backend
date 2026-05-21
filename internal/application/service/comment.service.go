@@ -13,7 +13,7 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) error
+	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*entity.Comment, error)
 
 	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) error
 
@@ -33,35 +33,42 @@ func NewCommentService(commentRepo domainRepo.CommentInterface, ticketRepo domai
 	return &commentService{commentRepo: commentRepo, ticketRepo: ticketRepo}
 }
 
-func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) error {
+func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*entity.Comment, error) {
 	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrTicketNotFound
+			return nil, service_error.ErrTicketNotFound
 		}
-		return err
+		return nil, err
 	}
 
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
-		return service_error.ErrUserIDNotFoundInContext
+		return nil, service_error.ErrUserIDNotFoundInContext
 	}
+	str_baseUserID := rawBaseUserID.(string)
+	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	if err != nil {
+		return nil, service_error.ErrCommonParseStrToUUID
+	}
+
 	rawRole := ctx.Value("role") // IT MUST BE EXIST!
 	if rawRole == nil {
-		return service_error.ErrUserRoleNotFoundInContext
+		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
 	role := rawRole.(entity.UserRole)
 
 	if ticket.Accessability == entity.PrivateTicket && role == entity.RoleResident {
-		return service_error.ErrCommentUnauthorizedAccess
+		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 
 	lastOrder, err := s.commentRepo.GetLastOrderByTicketID(ctx, ticketID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrCommentNotFound
+			return nil, service_error.ErrCommentNotFound
 		}
-		return err
+		return nil, err
 	}
 
 	// order := 1
@@ -69,12 +76,14 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	// 	order = *lastOrder + 1
 	// }
 
-	cr_comment := &entity.Comment{
+	comment := &entity.Comment{
 		TicketID:       ticketID,
 		Body:           req.Body,
 		CommittedOrder: *lastOrder + 1,
+		UserID:         &baseUserID,
 	}
-	return s.commentRepo.Create(ctx, cr_comment)
+	err = s.commentRepo.Create(ctx, comment)
+	return comment, nil
 }
 
 func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) error {
@@ -92,6 +101,7 @@ func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.Upda
 	}
 	str_baseUserID := rawBaseUserID.(string)
 	baseUserID, err := uuid.Parse(str_baseUserID)
+
 	if err != nil {
 		return service_error.ErrCommonParseStrToUUID
 	}
@@ -127,6 +137,7 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 	str_baseUserID := rawBaseUserID.(string)
 	baseUserID, err := uuid.Parse(str_baseUserID)
+
 	if err != nil {
 		return service_error.ErrCommonParseStrToUUID
 	}

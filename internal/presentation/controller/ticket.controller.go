@@ -42,12 +42,21 @@ func (c *TicketController) Create(ctx *gin.Context) {
 	}
 
 	//TODO:check other errors
-	if err := c.ticketService.Create(ctx, ticket); err != nil {
+	cr_ticket, err := c.ticketService.Create(ctx, ticket)
+	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_ticket", err)
 		return
 	}
-
-	response.Success(ctx, http.StatusCreated, "ticket_created_successfully", ticket)
+	data := dto.CreateTicketResponse{
+		ID:          cr_ticket.ID,
+		UserID:      cr_ticket.UserID,
+		Title:       cr_ticket.Title,
+		Description: cr_ticket.Description,
+		Body:        cr_ticket.Body,
+		Category:    cr_ticket.Category,
+		Status:      cr_ticket.Status,
+	}
+	response.Success(ctx, http.StatusCreated, "ticket_created_successfully", data)
 }
 
 func (c *TicketController) List(ctx *gin.Context) {
@@ -214,11 +223,17 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 		return
 	}
 
-	err = c.commentService.Create(ctx, ticketID, &req)
+	comm, err := c.commentService.Create(ctx, ticketID, &req)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_comment", err)
 		return
 	}
-
-	response.Success(ctx, http.StatusCreated, "comment_created_successfully", nil)
+	data := dto.CreateCommentResponse{
+		ID:             comm.ID,
+		UserID:         comm.UserID,
+		TicketID:       comm.TicketID,
+		Body:           comm.Body,
+		CommittedOrder: comm.CommittedOrder,
+	}
+	response.Success(ctx, http.StatusCreated, "comment_created_successfully", data)
 }

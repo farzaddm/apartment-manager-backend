@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"apartment-manager-backend/internal/application/dto/user"
+	userdto "apartment-manager-backend/internal/application/dto/user"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/pkg/response"
 	"fmt"

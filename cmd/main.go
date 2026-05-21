@@ -2,6 +2,7 @@ package main
 
 import (
 	"apartment-manager-backend/config"
+	"apartment-manager-backend/initsamples"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/internal/infrastructure/database"
 	"apartment-manager-backend/internal/infrastructure/jwt"
@@ -13,8 +14,6 @@ import (
 	"apartment-manager-backend/pkg/hasher"
 	"log"
 	"net/http"
-
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -103,13 +102,8 @@ func main() {
 	r := routes.SetUpRouter(controllers, jwtRepo)
 
 	//TODO : THIS IMP IS JUST FOR TEST BUT IN RELEASE VER WE NEED TO IN MORE PROPER IMP
-	InitManagersAndAdminAndResident(db, passwordHasher)
+	initsamples.CreateOrOverWriteManagersAndAdminAndResident(db, passwordHasher)
 
 	log.Println("server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
-}
-
-// TODO : Move this Func to right directories and REFACTOR IT
-func InitManagersAndAdminAndResident(db *gorm.DB, passwordHasher *hasher.BcryptHasher) {
-
 }
