@@ -26,10 +26,10 @@ func (r *apartmentRepository) Create(ctx context.Context, apartment *entity.Apar
 
 // /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) Update(ctx context.Context, apartment *entity.Apartment) error {
+func (r *apartmentRepository) Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) error {
 	result := r.db.WithContext(ctx).
 		Model(&entity.Apartment{}).
-		Where("id = ?", apartment.ID).
+		Where("id = ?", id).
 		Updates(apartment)
 
 	if result.Error != nil {

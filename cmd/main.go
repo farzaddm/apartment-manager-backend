@@ -2,6 +2,7 @@ package main
 
 import (
 	"apartment-manager-backend/config"
+	"apartment-manager-backend/initsamples"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/internal/infrastructure/database"
 	"apartment-manager-backend/internal/infrastructure/jwt"
@@ -39,6 +40,7 @@ func main() {
 	}
 
 	// --- REPOSITORIES ---
+
 	userRepo := postgres.NewUserRepository(db)
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
@@ -49,6 +51,7 @@ func main() {
 	inviteCodeRepo := postgres.NewInviteCodeRepository(db)
 	tagRepo := postgres.NewTagRepository(db)
 	announcementRepo := postgres.NewAnnouncementRepository(db)
+	commentRepo := postgres.NewCommentRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -72,15 +75,17 @@ func main() {
 	inviteCodeService := service.NewInviteCodeService(inviteCodeRepo, unitRepo, apartmentRepo)
 	tagService := service.NewTagService(tagRepo)
 	announcementService := service.NewAnnouncementService(announcementRepo, tagRepo)
+	commentService := service.NewCommentService(commentRepo, ticketRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
 	userController := controller.NewUserController(userService)
 	apartmentController := controller.NewApartmentController(apartmentSrv)
-	tickerController := controller.NewTicketController(ticketSrv)
+	tickerController := controller.NewTicketController(ticketSrv, commentService)
 	inviteCodeController := controller.NewInviteCodeController(inviteCodeService)
 	tagController := controller.NewTagController(tagService)
 	announcementController := controller.NewAnnouncementController(announcementService)
+	commentController := controller.NewCommentController(commentService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -91,10 +96,14 @@ func main() {
 		InviteCode:   inviteCodeController,
 		Tag:          tagController,
 		Announcement: announcementController,
+		Comment:      commentController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
 
+	//TODO : THIS IMP IS JUST FOR TEST BUT IN RELEASE VER WE NEED TO IN MORE PROPER IMP
+	initsamples.CreateOrOverWriteManagersAndAdminAndResident(db, passwordHasher)
+
 	log.Println("server running on :8080")
-	http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

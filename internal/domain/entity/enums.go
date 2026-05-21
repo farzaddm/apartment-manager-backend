@@ -55,3 +55,10 @@ const (
 	ImportantAnnouncementOrder     AnnouncementOrder = "important"
 	OtherAnnouncementOrder         AnnouncementOrder = "other"
 )
+
+type TicketAccessability string
+
+const (
+	PublicTicket  TicketAccessability = "public"
+	PrivateTicket TicketAccessability = "private"
+)

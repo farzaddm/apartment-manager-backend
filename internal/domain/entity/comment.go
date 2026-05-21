@@ -8,7 +8,8 @@ type Comment struct {
 	UserID   *uuid.UUID
 	TicketID uuid.UUID
 
-	Body string
+	Body           string
+	CommittedOrder int
 
 	User   User
 	Ticket Ticket

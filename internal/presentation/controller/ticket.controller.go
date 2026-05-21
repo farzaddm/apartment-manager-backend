@@ -3,7 +3,7 @@ package controller
 import (
 	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
-	"apartment-manager-backend/internal/domain/entity"
+	service_error "apartment-manager-backend/internal/application/service/error"
 	"fmt"
 
 	"apartment-manager-backend/pkg/response"
@@ -14,12 +14,14 @@ import (
 )
 
 type TicketController struct {
-	ticketService service.TicketService
+	ticketService  service.TicketService
+	commentService service.CommentService
 }
 
-func NewTicketController(ticketService service.TicketService) *TicketController {
+func NewTicketController(ticketService service.TicketService, commentService service.CommentService) *TicketController {
 	return &TicketController{
-		ticketService: ticketService,
+		ticketService:  ticketService,
+		commentService: commentService,
 	}
 }
 
@@ -27,56 +29,102 @@ func (c *TicketController) Create(ctx *gin.Context) {
 	var req dto.CreateTicketRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid request body", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
 		return
 	}
 
-	ticket := &entity.Ticket{
-		UserID:      req.UserID, // must be included
-		Title:       req.Title,
-		Description: req.Description,
-		Body:        req.Body,
-		Category:    req.Category,
+	ticket := &dto.CreateTicketRequest{
+		Title:         req.Title,
+		Description:   req.Description,
+		Body:          req.Body,
+		Category:      req.Category,
+		Accessability: req.Accessability,
 	}
 
-	if err := c.ticketService.Create(ctx, ticket); err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to create ticket", err)
-		return
-	}
+	//TODO:check other errors
+	cr_ticket, err := c.ticketService.Create(ctx, ticket)
+	if err != nil {
+		switch err {
 
-	response.Success(ctx, http.StatusCreated, "ticket created successfully", ticket)
+		case service_error.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		case service_error.ErrTicketUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "ticket_access_denied", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_create_ticket", err)
+			return
+		}
+	}
+	data := dto.CreateTicketResponse{
+		ID:          cr_ticket.ID,
+		UserID:      cr_ticket.UserID,
+		Title:       cr_ticket.Title,
+		Description: cr_ticket.Description,
+		Body:        cr_ticket.Body,
+		Category:    cr_ticket.Category,
+		Status:      cr_ticket.Status,
+	}
+	response.Success(ctx, http.StatusCreated, "ticket_created_successfully", data)
 }
 
 func (c *TicketController) List(ctx *gin.Context) {
 	var filter dto.TicketFilterRequest
 
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid query params", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_query_params", err)
 		return
 	}
 
-	var b bool
-
-	_, b = ctx.Get("user_id")
-	if b == false {
+	var b string
+	//TODO : check q params! conflict to normal key-values in ctx
+	b = ctx.Query("user_id")
+	if b == "" {
 		filter.UserID = nil
 	}
-	_, b = ctx.Get("status")
-	if b == false {
+	b = ctx.Query("status")
+	if b == "" {
 		filter.Status = nil
 	}
-	_, b = ctx.Get("category")
-	if b == false {
+	b = ctx.Query("category")
+	if b == "" {
 		filter.Category = nil
 	}
 
 	tickets, err := c.ticketService.List(ctx, filter)
 	if err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to fetch tickets", err)
-		return
+		switch err {
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext,
+			service_error.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		case service_error.ErrTicketIsPrivate:
+			response.Error(ctx, http.StatusForbidden, "ticket_is_private_and_access_denied", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_fetch_tickets", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "tickets fetched successfully", tickets)
+	response.Success(ctx, http.StatusOK, "tickets_fetched_successfully", tickets)
 }
 
 func (c *TicketController) Update(ctx *gin.Context) {
@@ -84,23 +132,43 @@ func (c *TicketController) Update(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid ticket id", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
 		return
 	}
 
 	var req dto.UpdateTicketRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid request body", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
 		return
 	}
 
 	if err := c.ticketService.Update(ctx, id, req); err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to update ticket", err)
-		return
+		switch err {
+
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		case service_error.ErrTicketUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "ticket_access_denied", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_update_ticket", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket updated successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_updated_successfully", nil)
 }
 
 func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
@@ -108,23 +176,30 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid ticket id", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
 		return
 	}
 
 	var req dto.UpdateTicketStatusRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid request body", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
 		return
 	}
 
 	if err := c.ticketService.UpdateStatus(ctx, id, req.Status); err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to update ticket status", err)
-		return
+		switch err {
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_update_ticket_status", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket status updated successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_status_updated_successfully", nil)
 }
 
 func (c *TicketController) Delete(ctx *gin.Context) {
@@ -132,16 +207,37 @@ func (c *TicketController) Delete(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid ticket id", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
 		return
 	}
 
 	if err := c.ticketService.Delete(ctx, id); err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to delete ticket", err)
-		return
+		switch err {
+
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext,
+			service_error.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		case service_error.ErrTicketUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "ticket_access_denied", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_delete_ticket", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket deleted successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_deleted_successfully", nil)
 }
 
 func (c *TicketController) GetByID(ctx *gin.Context) {
@@ -149,17 +245,41 @@ func (c *TicketController) GetByID(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid ticket id", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
 		return
 	}
 
 	ticket, err := c.ticketService.GetByID(ctx, id)
+	//TODO:check other errors
 	if err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to fetch ticket", err)
-		return
+		switch err {
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_missing_in_context", err)
+			return
+
+		case service_error.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_missing_in_context", err)
+			return
+
+		case service_error.ErrTicketIsPrivate:
+			response.Error(ctx, http.StatusForbidden, "ticket_is_private_and_access_denied", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_fetch_ticket", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket fetched successfully", ticket)
+	response.Success(ctx, http.StatusOK, "ticket_fetched_successfully", ticket)
 }
 
 func (c *TicketController) GetFully(ctx *gin.Context) {
@@ -167,17 +287,38 @@ func (c *TicketController) GetFully(ctx *gin.Context) {
 
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid ticket id", err)
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
 		return
 	}
 
 	ticket, err := c.ticketService.GetByIDWithAllRelations(ctx, id)
+	//TODO:check other errors
 	if err != nil {
-		response.Error(ctx, http.StatusInternalServerError, "failed to fetch ticket", err)
-		return
+		switch err {
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext,
+			service_error.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrTicketIsPrivate:
+			response.Error(ctx, http.StatusForbidden, "ticket_is_private_and_access_denied", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_fetch_ticket", err)
+			return
+		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket fetched successfully", ticket)
+	response.Success(ctx, http.StatusOK, "ticket_fetched_successfully", ticket)
 }
 
 func (c *TicketController) GetUserTickets(ctx *gin.Context) {
@@ -194,4 +335,57 @@ func (c *TicketController) GetUserTickets(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, http.StatusOK, "tickets_fetched_successfully", tickets)
+}
+
+func (c *TicketController) CreateComment(ctx *gin.Context) {
+	ticketID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
+		return
+	}
+
+	var req dto.CreateCommentRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		return
+	}
+
+	comm, err := c.commentService.Create(ctx, ticketID, &req)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
+			return
+
+		case service_error.ErrUserIDNotFoundInContext,
+			service_error.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
+			return
+
+		case service_error.ErrCommonParseStrToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+			return
+
+		case service_error.ErrCommentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "comment_access_denied", err)
+			return
+
+		case service_error.ErrCommentNotFound:
+			response.Error(ctx, http.StatusNotFound, "comment_not_found", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "failed_to_create_comment", err)
+			return
+		}
+	}
+	data := dto.CreateCommentResponse{
+		ID:             comm.ID,
+		UserID:         comm.UserID,
+		TicketID:       comm.TicketID,
+		Body:           comm.Body,
+		CommittedOrder: comm.CommittedOrder,
+	}
+	response.Success(ctx, http.StatusCreated, "comment_created_successfully", data)
 }

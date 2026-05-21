@@ -32,6 +32,10 @@ $RECYCLE.BIN/
 *.lnk
 
 # VS Code
+<<<<<<< HEAD
+.vscode/*
+=======
+>>>>>>> ca86b84ca1b81747f37a439f3fd36911c974fa84
 .vscode
 !.vscode/settings.json
 !.vscode/tasks.json
