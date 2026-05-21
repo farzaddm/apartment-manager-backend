@@ -1,0 +1,255 @@
+{
+	"info": {
+		"_postman_id": "1456e198-bf21-4e80-9edf-2e58a4b52e2f",
+		"name": "Auth API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Send OTP",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone\": \"09118991473\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/send-otp",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"send-otp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify OTP",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"phone\": \"09118991473\",\n    \"code\": \"123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/verify-otp",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"verify-otp"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"first_name\": \"Mehdiana\",\n    \"last_name\": \"Devos\",\n    \"username\": \"mehdi_admin_ap\",\n    \"email\": \"mehdi1213@example.com\",\n    \"phone\": \"09123456788\",\n    \"password\": \"my_secure_password45\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// شکل پاسخ تو: data.access_token و data.refresh_token\r",
+							"const json = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Login success\", function () {\r",
+							"  pm.expect(json).to.have.property(\"success\", true);\r",
+							"});\r",
+							"\r",
+							"const access = json?.data?.access_token;\r",
+							"const refresh = json?.data?.refresh_token;\r",
+							"\r",
+							"pm.test(\"Tokens exist\", function () {\r",
+							"  pm.expect(access).to.be.a(\"string\").and.not.empty;\r",
+							"  pm.expect(refresh).to.be.a(\"string\").and.not.empty;\r",
+							"});\r",
+							"\r",
+							"// ذخیره در Global Variables\r",
+							"pm.globals.set(\"access_token\", access);\r",
+							"pm.globals.set(\"refresh_token\", refresh);\r",
+							"\r",
+							"// اختیاری\r",
+							"pm.globals.set(\"user_id\", json?.data?.user?.ID);\r",
+							"\r",
+							"console.log(\"Saved access_token & refresh_token (GLOBAL)\");\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"voldemort_man\",\n    \"password\": \"123456\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Me (Get Profile)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/me",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Refresh Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"// دریافت توکن‌ها از پاسخ (فرض می‌کنیم در ساختار data هستند)\r",
+							"const access = json?.data?.access_token;\r",
+							"const refresh = json?.data?.refresh_token;\r",
+							"\r",
+							"// ذخیره در Global\r",
+							"if (access) {\r",
+							"    pm.globals.set(\"access_token\", access);\r",
+							"    console.log(\"Access Token updated globally.\");\r",
+							"}\r",
+							"\r",
+							"if (refresh) {\r",
+							"    pm.globals.set(\"refresh_token\", refresh);\r",
+							"    console.log(\"Refresh Token updated globally.\");\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"refresh_token\":  \"{{refresh_token}}\" \n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/refresh",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"refresh"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/logout",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "access_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		},
+		{
+			"key": "user_id",
+			"value": ""
+		}
+	]
+}
