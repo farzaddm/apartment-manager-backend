@@ -57,7 +57,8 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 
 	if ticket.Accessability == entity.PrivateTicket && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
@@ -146,7 +147,8 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 	if rawRole == nil {
 		return service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 
 	if (comm.UserID == nil || *comm.UserID == baseUserID) && role == entity.RoleResident {
 		return service_error.ErrCommentUnauthorizedAccess
@@ -184,7 +186,8 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Com
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID == baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
@@ -221,7 +224,8 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uu
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID == baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}

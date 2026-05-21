@@ -82,8 +82,8 @@ func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
 	if rawRole == nil {
 		return service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
-
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 	//TODO: nil situation
 	ticket, err := s.GetByIDSuperAccess(ctx, id)
 	if err != nil {
@@ -131,8 +131,8 @@ func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Tick
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
-
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
@@ -180,7 +180,8 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
@@ -218,7 +219,8 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	if rawRole == nil {
 		return nil, service_error.ErrUserRoleNotFoundInContext
 	}
-	role := rawRole.(entity.UserRole)
+	str_role := rawRole.(string)
+	role := entity.UserRole(str_role)
 
 	new_fl := make([]domainRepo.TicketWithCommentCount, 0)
 	for i := range fl {
