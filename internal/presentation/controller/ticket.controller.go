@@ -34,7 +34,6 @@ func (c *TicketController) Create(ctx *gin.Context) {
 	}
 
 	ticket := &dto.CreateTicketRequest{
-		UserID:        req.UserID, // must be included
 		Title:         req.Title,
 		Description:   req.Description,
 		Body:          req.Body,

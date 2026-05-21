@@ -7,7 +7,6 @@ import (
 )
 
 type CreateTicketRequest struct {
-	UserID        *uuid.UUID                 `json:"user_id"`
 	Title         string                     `json:"title" binding:"required"`
 	Description   string                     `json:"description"`
 	Body          string                     `json:"body"  binding:"required"`

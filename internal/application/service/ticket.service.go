@@ -51,16 +51,17 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 	}
 
 	//TODO: nil situation
-	if req.UserID != nil && baseUserID == *req.UserID {
-		return nil, service_error.ErrTicketUnauthorizedAccess
-	}
+	// if req.UserID == nil || baseUserID != *req.UserID {
+	// 	return nil, service_error.ErrTicketUnauthorizedAccess
+	// }
 	ticket := &entity.Ticket{
-		UserID:        req.UserID,
+		UserID:        &baseUserID,
 		Title:         req.Title,
 		Description:   req.Description,
 		Body:          req.Body,
 		Category:      req.Category,
 		Accessability: req.Accessability,
+		Status:        entity.TicketOpen,
 	}
 	err = s.repo.Create(ctx, ticket)
 	return ticket, err
@@ -89,7 +90,7 @@ func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	if ticket.UserID != nil && baseUserID == *ticket.UserID {
+	if ticket.UserID == nil || baseUserID != *ticket.UserID {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return service_error.ErrTicketUnauthorizedAccess
 		}
@@ -191,6 +192,8 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 	return ticket, nil
 }
 
+// TODO : review it and maybe change it (in this time  page and offset are use for all tickets not just accessible tickets )
+// TODO : This list it's not fully
 func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error) {
 	new_filter := domainRepo.TicketFilter{
 		UserID:   filter.UserID,
@@ -252,7 +255,7 @@ func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.Update
 	}
 
 	//TODO: nil situation
-	if ticket.UserID != nil && baseUserID == *ticket.UserID {
+	if ticket.UserID == nil || baseUserID != *ticket.UserID {
 		return service_error.ErrTicketUnauthorizedAccess
 	}
 
