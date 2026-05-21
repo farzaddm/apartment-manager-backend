@@ -52,28 +52,30 @@ func (s *AuthService) GenerateOTP() string {
 	return fmt.Sprintf("%06d", rand.Intn(1000000))
 }
 
-func (s *AuthService) SendOTP(phone string) error {
+func (s *AuthService) SendOTP(phone string) (string, error) {
 	code := s.GenerateOTP()
+	fmt.Printf("[REDIS-SAVE] Phone: '%s' | Generated Code: '%s'", phone, code)
 
 	err := s.otpRepo.Save(phone, code, 2*time.Minute)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	message := "your code : " + code
 
 	err = s.smsProvider.SendOTP(phone, message)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return code, nil
 }
 
 //***************************** 2 *****************************
 
 func (s *AuthService) VerifyOTP(ctx context.Context, phone, code string) (*dto.VerifyOTPOutput, error) {
 	storedOTP, err := s.otpRepo.Get(phone)
+	fmt.Printf("[REDIS-GET] Request Phone: '%s' | Request Code: '%s' | Stored Code in Redis: '%s' | Error: %v", phone, code, storedOTP, err)
 	if err != nil {
 		return nil, errors.New("otp_not_found_or_expired")
 	}
