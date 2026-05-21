@@ -28,12 +28,15 @@ func (h *AuthController) SendOTP(c *gin.Context) {
 		return
 	}
 
-	err := h.authService.SendOTP(req.Phone)
+	code, err := h.authService.SendOTP(req.Phone)
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "failed to send otp", err)
 		return
 	}
-	response.Success(c, http.StatusOK, "success", nil)
+
+	response.Success(c, http.StatusOK, "success", gin.H{
+		"otp": code,
+	})
 }
 
 func (h *AuthController) VerifyOTP(c *gin.Context) {

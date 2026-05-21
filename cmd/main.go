@@ -2,7 +2,6 @@ package main
 
 import (
 	"apartment-manager-backend/config"
-	"apartment-manager-backend/initsamples"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/internal/infrastructure/database"
 	"apartment-manager-backend/internal/infrastructure/jwt"
@@ -102,7 +101,7 @@ func main() {
 	r := routes.SetUpRouter(controllers, jwtRepo)
 
 	//TODO : THIS IMP IS JUST FOR TEST BUT IN RELEASE VER WE NEED TO IN MORE PROPER IMP
-	initsamples.CreateOrOverWriteManagersAndAdminAndResident(db, passwordHasher)
+	//initsamples.CreateOrOverWriteManagersAndAdminAndResident(db, passwordHasher)
 
 	log.Println("server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
