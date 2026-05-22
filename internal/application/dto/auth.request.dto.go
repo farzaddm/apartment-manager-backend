@@ -16,6 +16,7 @@ type RegisterInput struct {
 	Email     string `json:"email" binding:"required,email"`
 	Phone     string `json:"phone" binding:"required"`
 	Password  string `json:"password" binding:"required,min=6"`
+	Gender    string `json:"gender" binding:"required,oneof=male female"`
 }
 
 type LoginInput struct {

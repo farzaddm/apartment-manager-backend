@@ -39,7 +39,6 @@ func main() {
 	}
 
 	// --- REPOSITORIES ---
-
 	userRepo := postgres.NewUserRepository(db)
 	otpRepo := redis.NewOTPRepository(redisClient)
 	refreshRepo := redis.NewRefreshTokenRepository(redisClient)
