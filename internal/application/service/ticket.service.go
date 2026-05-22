@@ -50,7 +50,6 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		return nil, service_error.ErrCommonParseStrToUUID
 	}
 
-	//TODO: nil situation
 	// if req.UserID == nil || baseUserID != *req.UserID {
 	// 	return nil, service_error.ErrTicketUnauthorizedAccess
 	// }
@@ -85,12 +84,12 @@ func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
-	//TODO: nil situation
+
 	ticket, err := s.GetByIDSuperAccess(ctx, id)
 	if err != nil {
 		return err
 	}
-	if ticket.UserID == nil || baseUserID != *ticket.UserID {
+	if ticket.UserID == nil || baseUserID != *(ticket.UserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return service_error.ErrTicketUnauthorizedAccess
 		}
@@ -254,8 +253,7 @@ func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.Update
 		return err
 	}
 
-	//TODO: nil situation
-	if ticket.UserID == nil || baseUserID != *ticket.UserID {
+	if ticket.UserID == nil || baseUserID != *(ticket.UserID) {
 		return service_error.ErrTicketUnauthorizedAccess
 	}
 
