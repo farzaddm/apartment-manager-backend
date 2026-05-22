@@ -50,6 +50,7 @@ func main() {
 	tagRepo := postgres.NewTagRepository(db)
 	announcementRepo := postgres.NewAnnouncementRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
+	ruleRepo := postgres.NewRuleRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -74,6 +75,7 @@ func main() {
 	tagService := service.NewTagService(tagRepo)
 	announcementService := service.NewAnnouncementService(announcementRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo, ticketRepo)
+	ruleService := service.NewRuleService(ruleRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
@@ -84,6 +86,7 @@ func main() {
 	tagController := controller.NewTagController(tagService)
 	announcementController := controller.NewAnnouncementController(announcementService)
 	commentController := controller.NewCommentController(commentService)
+	ruleController := controller.NewRuleController(ruleService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -95,6 +98,7 @@ func main() {
 		Tag:          tagController,
 		Announcement: announcementController,
 		Comment:      commentController,
+		Rule:         ruleController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)
