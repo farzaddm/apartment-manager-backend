@@ -1,15 +1,16 @@
 package entity
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type Rule struct {
 	BaseModel
 
-	ApartmentID uuid.UUID
+	ApartmentID uuid.UUID    `json:"apartment_id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	Category    RuleCategory `json:"category"`
 
-	Category RuleCategory
-
-	Apartment Apartment
-
-	Items []RuleItem
+	Apartment Apartment `json:"apartment,omitempty"`
 }
