@@ -41,7 +41,6 @@ func (c *TicketController) Create(ctx *gin.Context) {
 		Accessability: req.Accessability,
 	}
 
-	//TODO:check other errors
 	cr_ticket, err := c.ticketService.Create(ctx, ticket)
 	if err != nil {
 		switch err {
@@ -84,7 +83,7 @@ func (c *TicketController) List(ctx *gin.Context) {
 	}
 
 	var b string
-	//TODO : check q params! conflict to normal key-values in ctx
+
 	b = ctx.Query("user_id")
 	if b == "" {
 		filter.UserID = nil
@@ -250,7 +249,7 @@ func (c *TicketController) GetByID(ctx *gin.Context) {
 	}
 
 	ticket, err := c.ticketService.GetByID(ctx, id)
-	//TODO:check other errors
+
 	if err != nil {
 		switch err {
 		case service_error.ErrTicketNotFound:
@@ -292,7 +291,7 @@ func (c *TicketController) GetFully(ctx *gin.Context) {
 	}
 
 	ticket, err := c.ticketService.GetByIDWithAllRelations(ctx, id)
-	//TODO:check other errors
+
 	if err != nil {
 		switch err {
 		case service_error.ErrTicketNotFound:
