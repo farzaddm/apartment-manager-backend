@@ -10,6 +10,7 @@ type UserInterface interface {
 	Create(ctx context.Context, user *entity.User) error
 	GetById(ctx context.Context, id string) (*entity.User, error)
 	Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error
+	ChangePassword(ctx context.Context, hashedPassword string, id string) error
 	Delete(ctx context.Context, id string) error
 
 	ExistEmail(ctx context.Context, email string) (bool, error)

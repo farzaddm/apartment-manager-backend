@@ -18,13 +18,15 @@ func NewUserService(userRepo postgres.UserInterface, hasher *hasher.BcryptHasher
 }
 
 func (s *UserService) Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error {
-	hashedPassword, err := s.hasher.Hash(user.Password)
+	return s.UserRepo.Update(ctx, user, id)
+}
+
+func (s *UserService) ChangePassword(ctx context.Context, req userdto.ChangePasswordRequest, id string) error {
+	hashedPassword, err := s.hasher.Hash(req.Password)
 	if err != nil {
 		return errors.New("failed_to_hash_password")
 	}
-	user.Password = hashedPassword
-
-	return s.UserRepo.Update(ctx, user, id)
+	return s.UserRepo.ChangePassword(ctx, hashedPassword, id)
 }
 
 func (s *UserService) Delete(ctx context.Context, id string) error {
@@ -44,7 +46,6 @@ func (s *UserService) GetById(ctx context.Context, id string) (*userdto.UserProf
 		LastName:  rawUser.LastName,
 		Email:     rawUser.Email,
 		Username:  rawUser.Username,
-		Password:  rawUser.Password,
 		Gender:    rawUser.Gender,
 		Role:      rawUser.Role,
 	}

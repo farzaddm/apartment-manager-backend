@@ -71,6 +71,13 @@ func (r *userRepository) Update(ctx context.Context, user userdto.UpdateProfileR
 	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Updates(user).Error
 }
 
+func (r *userRepository) ChangePassword(ctx context.Context, hashedPassword string, id string) error {
+	return r.db.WithContext(ctx).
+		Model(&entity.User{}).
+		Where("id = ?", id).
+		Update("password", hashedPassword).Error
+}
+
 func (r *userRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Delete(&entity.User{}).Error
 }

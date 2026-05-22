@@ -37,15 +37,17 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/register", handler.Auth.Register)
 	r.POST("/login", handler.Auth.Login)
 	r.POST("/refresh", handler.Auth.Refresh)
-	r.GET("/user/:user_id", handler.User.GetById)
 
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
 		protected.POST("/logout", handler.Auth.Logout)
-		protected.PUT("/user", handler.User.Update)
-		protected.DELETE("/user", handler.User.Delete)
+		protected.PUT("/user/me", handler.User.Update)
+		protected.DELETE("/user/me", handler.User.Delete)
 		protected.POST("/user/profile-image/", handler.User.SetProfileImage)
+		protected.GET("/user/me", handler.User.GetMe)
+		protected.PATCH("/user/me/password", handler.User.ChangePassword)
+		protected.GET("/user/:user_id", handler.User.GetById)
 		protected.POST("/invite-code/validate", handler.InviteCode.Validate)
 		protected.GET("/tags", handler.Tag.List)
 

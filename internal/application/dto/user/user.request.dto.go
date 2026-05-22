@@ -7,6 +7,9 @@ type UpdateProfileRequest struct {
 	LastName  string             `json:"last_name" binding:"required"`
 	Email     string             `json:"email" binding:"required,email"`
 	Username  string             `json:"username" binding:"required"`
-	Password  string             `json:"password" binding:"required,min=6"`
 	Gender    *entity.GenderType `json:"gender" binding:"omitempty"`
+}
+
+type ChangePasswordRequest struct {
+	Password string `json:"password" binding:"required"`
 }

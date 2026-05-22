@@ -43,6 +43,28 @@ func (u *UserController) Update(c *gin.Context) {
 	response.Success(c, http.StatusOK, "profile_updated_successfully", nil)
 }
 
+func (u *UserController) ChangePassword(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusBadRequest, "user_not_found_in_session", nil)
+		return
+	}
+
+	var req userdto.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "validation_failed", err)
+		return
+	}
+
+	err := u.userService.ChangePassword(c, req, userId.(string))
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "profile_updated_successfully", nil)
+}
+
 func (u *UserController) Delete(c *gin.Context) {
 	userId, exists := c.Get("user_id")
 	if !exists {
@@ -67,6 +89,22 @@ func (u *UserController) GetById(c *gin.Context) {
 	}
 
 	user, err := u.userService.GetById(c.Request.Context(), userId)
+	if err != nil {
+		response.Error(c, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "profile_retrieved_successfully", user)
+}
+
+func (u *UserController) GetMe(c *gin.Context) {
+	userId, exists := c.Get("user_id")
+	if !exists {
+		response.Error(c, http.StatusBadRequest, "user_not_found_in_session", nil)
+		return
+	}
+
+	user, err := u.userService.GetById(c.Request.Context(), userId.(string))
 	if err != nil {
 		response.Error(c, http.StatusBadRequest, err.Error(), nil)
 		return
