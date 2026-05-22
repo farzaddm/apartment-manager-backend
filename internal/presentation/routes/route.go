@@ -5,6 +5,7 @@ import (
 	"apartment-manager-backend/internal/presentation/controller"
 	"apartment-manager-backend/internal/presentation/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,6 +22,13 @@ type Controllers struct {
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
 	r := gin.New()
+
+	//TODO : Remove This is Release Mode
+	// r.Use(gin.Logger())
+	// r.Use(gin.Recovery())
+
+	// CORS
+	r.Use(cors.Default())
 
 	r.Static("/uploads", "./uploads")
 
