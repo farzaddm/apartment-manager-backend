@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/spf13/viper"
 )
@@ -22,7 +21,7 @@ type AppConfig struct {
 
 type PostgresConfig struct {
 	Host     string `mapstructure:"DB_HOST"`
-	Port     string `mapstructure:"POSTGRES_HOST_PORT"`
+	Port     string `mapstructure:"DB_PORT"`
 	User     string `mapstructure:"DB_USER"`
 	Password string `mapstructure:"DB_PASSWORD"`
 	Name     string `mapstructure:"DB_NAME"`
@@ -51,17 +50,34 @@ func Load() (*Config, error) {
 	viper.AddConfigPath("../")
 	viper.AddConfigPath("../../")
 
+	_ = viper.ReadInConfig()
+
 	viper.AutomaticEnv()
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Println("env file not found, using system env")
-	}
+	viper.BindEnv("APP_ENV")
+	viper.BindEnv("APP_PORT")
+	viper.BindEnv("APP_SECRET_KEY")
+
+	viper.BindEnv("DB_HOST")
+	viper.BindEnv("DB_PORT")
+	viper.BindEnv("DB_USER")
+	viper.BindEnv("DB_PASSWORD")
+	viper.BindEnv("DB_NAME")
+	viper.BindEnv("DB_SSLMODE")
+
+	viper.BindEnv("REDIS_HOST")
+	viper.BindEnv("REDIS_PORT")
+	viper.BindEnv("REDIS_PASSWORD")
+	viper.BindEnv("REDIS_DB")
+
+	viper.BindEnv("JWT_ACCESS_SECRET")
+	viper.BindEnv("JWT_REFRESH_SECRET")
+	viper.BindEnv("JWT_ACCESS_EXPIRE_MINUTES")
+	viper.BindEnv("JWT_REFRESH_EXPIRE_DAYS")
 
 	var cfg Config
 
-	err = viper.Unmarshal(&cfg)
-	if err != nil {
+	if err := viper.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -69,14 +85,13 @@ func Load() (*Config, error) {
 }
 
 func (p PostgresConfig) DSN() string {
+	sslMode := p.SSLMode
+	if sslMode == "" {
+		sslMode = "disable"
+	}
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		p.Host,
-		p.Port,
-		p.User,
-		p.Password,
-		p.Name,
-		p.SSLMode,
+		p.Host, p.Port, p.User, p.Password, p.Name, sslMode,
 	)
 }
 

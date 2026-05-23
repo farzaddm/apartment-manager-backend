@@ -13,7 +13,7 @@ func SetUpApartmentRoutes(publicG *gin.RouterGroup, adminG *gin.RouterGroup, han
 
 	publicG.GET("/apartments/:apartment_id", handler.GetByID)
 	publicG.GET("/apartments/:apartment_id/users", handler.GetByIDWithUsers)
-	publicG.GET("/apartments/:apartment_id/rules", handler.GetByIDWithRules)
+	//publicG.GET("/apartments/:apartment_id/rules", handler.GetByIDWithRules)
 	publicG.GET("/apartments/:apartment_id/announcements", handler.GetByIDWithAnnouncements)
 	publicG.GET("/apartments/:apartment_id/invite-codes", handler.GetByIDWithInviteCodes)
 }

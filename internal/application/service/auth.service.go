@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -23,6 +25,7 @@ type AuthService struct {
 	smsProvider  sms.SMSInterface
 	hasher       *hasher.BcryptHasher
 	refreshTTL   time.Duration
+	unitRepo     postgres.UnitInterface
 }
 
 func NewAuthService(
@@ -33,6 +36,7 @@ func NewAuthService(
 	smsProvider sms.SMSInterface,
 	hasher *hasher.BcryptHasher,
 	refreshExpireDays int,
+	unitRepo postgres.UnitInterface,
 ) *AuthService {
 	return &AuthService{
 		userRepo:     userRepo,
@@ -42,19 +46,49 @@ func NewAuthService(
 		smsProvider:  smsProvider,
 		hasher:       hasher,
 		refreshTTL:   time.Duration(refreshExpireDays) * 24 * time.Hour,
+		unitRepo:     unitRepo,
 	}
 }
 
-//***************************** 1 *****************************
+func (s *AuthService) buildUserResponse(ctx context.Context, user *entity.User) (*dto.UserResponseDTO, error) {
+	if user == nil {
+		return nil, nil
+	}
+
+	var genderStr string
+	if user.Gender != nil {
+		genderStr = string(*user.Gender)
+	}
+
+	var unitID *uuid.UUID
+	unit, err := s.unitRepo.GetByUserID(ctx, user.ID)
+	if err == nil && unit != nil {
+		unitID = &unit.ID
+	}
+
+	return &dto.UserResponseDTO{
+		ID:              user.ID,
+		CreatedAt:       user.CreatedAt,
+		ApartmentID:     user.ApartmentID,
+		UnitID:          unitID,
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		Username:        user.Username,
+		Email:           user.Email,
+		Phone:           user.Phone,
+		Role:            string(user.Role),
+		Gender:          genderStr,
+		ProfileImageURL: user.ProfileImageURL,
+	}, nil
+}
 
 func (s *AuthService) GenerateOTP() string {
 	rand.Seed(time.Now().UnixNano())
-	return fmt.Sprintf("%06d", rand.Intn(1000000))
+	return fmt.Sprintf("%05d", rand.Intn(100000))
 }
 
 func (s *AuthService) SendOTP(phone string) (string, error) {
 	code := s.GenerateOTP()
-	fmt.Printf("[REDIS-SAVE] Phone: '%s' | Generated Code: '%s'", phone, code)
 
 	err := s.otpRepo.Save(phone, code, 2*time.Minute)
 	if err != nil {
@@ -71,16 +105,13 @@ func (s *AuthService) SendOTP(phone string) (string, error) {
 	return code, nil
 }
 
-//***************************** 2 *****************************
-
 func (s *AuthService) VerifyOTP(ctx context.Context, phone, code string) (*dto.VerifyOTPOutput, error) {
 	storedOTP, err := s.otpRepo.Get(phone)
-	fmt.Printf("[REDIS-GET] Request Phone: '%s' | Request Code: '%s' | Stored Code in Redis: '%s' | Error: %v", phone, code, storedOTP, err)
 	if err != nil {
 		return nil, errors.New("otp_not_found_or_expired")
 	}
 
-	if storedOTP != code && code != "111111" {
+	if storedOTP != code && code != "11111" {
 		return nil, errors.New("invalid_otp")
 	}
 
@@ -118,15 +149,18 @@ func (s *AuthService) VerifyOTP(ctx context.Context, phone, code string) (*dto.V
 		}
 	}
 
+	userDTO, err := s.buildUserResponse(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.VerifyOTPOutput{
-		User:         user,
+		User:         userDTO,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Message:      "login_success",
 	}, nil
 }
-
-//***************************** 3 *****************************
 
 func (s *AuthService) Register(ctx context.Context, input dto.RegisterInput) (*dto.LoginOutput, error) {
 	isVerified, err := s.otpRepo.IsVerified(input.Phone)
@@ -190,15 +224,18 @@ func (s *AuthService) Register(ctx context.Context, input dto.RegisterInput) (*d
 		}
 	}
 
+	userDTO, err := s.buildUserResponse(ctx, newUser)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.LoginOutput{
-		User:         newUser,
+		User:         userDTO,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Message:      "registration_success",
 	}, nil
 }
-
-//***************************** 4 *****************************
 
 func (s *AuthService) Login(ctx context.Context, input dto.LoginInput) (*dto.LoginOutput, error) {
 	user, err := s.userRepo.GetByUsername(ctx, input.Username)
@@ -231,15 +268,18 @@ func (s *AuthService) Login(ctx context.Context, input dto.LoginInput) (*dto.Log
 		}
 	}
 
+	userDTO, err := s.buildUserResponse(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.LoginOutput{
-		User:         user,
+		User:         userDTO,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Message:      "login_success",
 	}, nil
 }
-
-//***************************** 5 *****************************
 
 func (s *AuthService) RefreshToken(ctx context.Context, input dto.RefreshInput) (*dto.LoginOutput, error) {
 	claims, err := s.tokenService.ValidateToken(input.RefreshToken)
@@ -267,8 +307,6 @@ func (s *AuthService) RefreshToken(ctx context.Context, input dto.RefreshInput) 
 		Message:      "access_token_renewed",
 	}, nil
 }
-
-//***************************** 6 *****************************
 
 func (s *AuthService) Logout(ctx context.Context, userID string) error {
 	_, err := s.refreshRepo.Get(ctx, userID)
