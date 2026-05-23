@@ -5,7 +5,6 @@ import (
 	"apartment-manager-backend/internal/presentation/controller"
 	"apartment-manager-backend/internal/presentation/middleware"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,7 +28,8 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	// r.Use(gin.Recovery())
 
 	// CORS
-	r.Use(cors.Default())
+	// r.Use(cors.Default())
+	r.Use(corsMiddleware())
 
 	r.Static("/uploads", "./uploads")
 
@@ -79,4 +79,19 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	}
 
 	return r
+}
+
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
