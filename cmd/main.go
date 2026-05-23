@@ -68,6 +68,7 @@ func main() {
 		smsService,
 		passwordHasher,
 		cfg.JWT.RefreshExpireDays,
+		unitRepo,
 	)
 	userService := service.NewUserService(userRepo, passwordHasher)
 	apartmentSrv := service.NewApartmentService(apartmentRepo)

@@ -72,7 +72,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		managementGroup.DELETE("/apartments/:apartment_id/announcements/:id", handler.Announcement.Delete)
 
 		managementGroup.POST("/apartments/:apartment_id/rules", handler.Rule.Create)
-		//protected.GET("/apartments/:apartment_id/rules", handler.Rule.List)
+		protected.GET("/apartments/:apartment_id/rules", handler.Rule.List)
 		protected.GET("/apartments/:apartment_id/rules/:id", handler.Rule.Get)
 		managementGroup.PUT("/apartments/:apartment_id/rules/:id", handler.Rule.Update)
 		managementGroup.DELETE("/apartments/:apartment_id/rules/:id", handler.Rule.Delete)
