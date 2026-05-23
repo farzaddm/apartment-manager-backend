@@ -78,13 +78,13 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 		}
 		return nil, err
 	}
-
+	
 	return &ticket, nil
 }
 
 // /////////////////// List / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 // TODO: im not sure that is this code worked or not ? (maybe need some struct tags in domainRepo.TicketWithCommentCount)
-func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter) ([]domainRepo.TicketWithCommentCount, error) {
+func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter, me uuid.UUID, role entity.UserRole) ([]domainRepo.TicketWithCommentCount, error) {
 	var tickets []domainRepo.TicketWithCommentCount
 
 	// TODO: Verify whether using Select here could cause issues.
@@ -94,8 +94,21 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		Joins("LEFT JOIN comments ON comments.ticket_id = tickets.id").
 		Group("tickets.id")
 
+	if !(role == entity.RoleAdmin || role == entity.RoleManager) {
+		query = query.Where(
+			r.db.Where("tickets.accessability = ?", "public").
+				Or("tickets.user_id = ?", me),
+		)
+	}
+
 	if filter.UserID != nil {
-		query = query.Where("tickets.user_id = ?", *filter.UserID)
+		nilUUID := uuid.MustParse("00000000-0000-0000-0000-000000000000")
+
+		if *filter.UserID == nilUUID {
+			query = query.Where("tickets.user_id IS NULL")
+		} else {
+			query = query.Where("tickets.user_id = ?", *filter.UserID)
+		}
 	}
 
 	if filter.Limit > 0 {

@@ -188,23 +188,24 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 		}
 	}
 
+	//TODO : FIX THIS !!!!!!!
+	ticket.User.Email = ":)"
+	ticket.User.Phone = ":)"
+	ticket.User.Password = ":)"
+	ticket.User.Role = ":)"
+
+	for i := range ticket.Comments {
+		ticket.Comments[i].User.Email = ":)"
+		ticket.Comments[i].User.Phone = ":)"
+		ticket.Comments[i].User.Password = ":)"
+		ticket.Comments[i].User.Role = ":)"
+	}
+
 	return ticket, nil
 }
 
-// TODO : review it and maybe change it (in this time  page and offset are use for all tickets not just accessible tickets )
 // TODO : This list it's not fully
 func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error) {
-	new_filter := domainRepo.TicketFilter{
-		UserID:   filter.UserID,
-		Status:   filter.Status,
-		Category: filter.Category,
-		Limit:    filter.Limit,
-		Offset:   filter.Limit * (filter.Page - 1),
-	}
-	fl, err := s.repo.List(ctx, new_filter)
-	if err != nil {
-		return nil, err
-	}
 
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
@@ -224,16 +225,20 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
 
-	new_fl := make([]domainRepo.TicketWithCommentCount, 0)
-	for i := range fl {
-		if fl[i].Accessability == entity.PublicTicket ||
-			(fl[i].UserID != nil && *fl[i].UserID == baseUserID) ||
-			role == entity.RoleManager || role == entity.RoleAdmin {
-			new_fl = append(new_fl, fl[i])
-
-		}
+	new_filter := domainRepo.TicketFilter{
+		UserID:   filter.UserID,
+		Status:   filter.Status,
+		Category: filter.Category,
+		Limit:    filter.Limit,
+		Offset:   filter.Limit * (filter.Page - 1),
 	}
-	return new_fl, err
+
+	fl, err := s.repo.List(ctx, new_filter, baseUserID, role)
+	if err != nil {
+		return nil, err
+	}
+
+	return fl, err
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
