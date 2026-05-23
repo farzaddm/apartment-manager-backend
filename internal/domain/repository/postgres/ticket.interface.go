@@ -16,7 +16,7 @@ type TicketInterface interface {
 
 	GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
 
-	List(ctx context.Context, filter TicketFilter) ([]TicketWithCommentCount, error)
+	List(ctx context.Context, filter TicketFilter, me uuid.UUID, role entity.UserRole) ([]TicketWithCommentCount, error)
 
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
 	UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) error
