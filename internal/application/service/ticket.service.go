@@ -188,6 +188,19 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 		}
 	}
 
+	//TODO : FIX THIS !!!!!!!
+	ticket.User.Email = ":)"
+	ticket.User.Phone = ":)"
+	ticket.User.Password = ":)"
+	ticket.User.Role = ":)"
+
+	for i := range ticket.Comments {
+		ticket.Comments[i].User.Email = ":)"
+		ticket.Comments[i].User.Phone = ":)"
+		ticket.Comments[i].User.Password = ":)"
+		ticket.Comments[i].User.Role = ":)"
+	}
+
 	return ticket, nil
 }
 

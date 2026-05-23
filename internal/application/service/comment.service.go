@@ -193,6 +193,12 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Com
 	}
 
 	c, err := s.commentRepo.GetByID(ctx, id)
+	//TODO : FIX THIS !!!!!!!!!!!
+	c.User.Email = ":)"
+	c.User.Phone = ":)"
+	c.User.Password = ":)"
+	c.User.Role = ":)"
+
 	if err != nil {
 		return nil, err
 	}

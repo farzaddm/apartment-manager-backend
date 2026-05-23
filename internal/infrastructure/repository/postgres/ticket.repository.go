@@ -78,7 +78,7 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 		}
 		return nil, err
 	}
-
+	
 	return &ticket, nil
 }
 
