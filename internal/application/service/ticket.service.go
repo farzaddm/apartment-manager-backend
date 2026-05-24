@@ -234,6 +234,11 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	}
 
 	fl, err := s.repo.List(ctx, new_filter, baseUserID, role)
+	//TODO:
+	for i := range fl {
+		x := uuid.MustParse("00000000-0000-0000-0000-000000000000")
+		fl[i].UserID = &x
+	}
 	if err != nil {
 		return nil, err
 	}
