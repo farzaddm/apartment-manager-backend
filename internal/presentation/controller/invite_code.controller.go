@@ -61,11 +61,11 @@ func (c *InviteCodeController) Validate(ctx *gin.Context) {
 		return
 	}
 
-	err := c.inviteCodeService.Validate(ctx.Request.Context(), req, fmt.Sprintf("%v", userID))
+	res, err := c.inviteCodeService.Validate(ctx.Request.Context(), req, fmt.Sprintf("%v", userID))
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "successfully_joined_the_apartment_building_and_assigned_to_the_unit", nil)
+	response.Success(ctx, http.StatusOK, "successfully_joined_the_apartment_building_and_assigned_to_the_unit", res)
 }

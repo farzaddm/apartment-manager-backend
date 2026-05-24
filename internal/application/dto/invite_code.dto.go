@@ -19,3 +19,8 @@ type InviteCodeResponse struct {
 type ValidateInviteCodeRequest struct {
 	Code string
 }
+
+type ValidateInviteCodeResponse struct {
+	ApartmentID string `json:"apartment_id"`
+	UnitID      string `json:"unit_id"`
+}
