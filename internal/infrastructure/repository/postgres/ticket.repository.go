@@ -78,7 +78,7 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 		}
 		return nil, err
 	}
-	
+
 	return &ticket, nil
 }
 
@@ -109,6 +109,13 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		} else {
 			query = query.Where("tickets.user_id = ?", *filter.UserID)
 		}
+	}
+
+	if filter.Status != nil {
+		query = query.Where("tickets.status = ?", *filter.Status)
+	}
+	if filter.Category != nil {
+		query = query.Where("tickets.category = ?", *filter.Category)
 	}
 
 	if filter.Limit > 0 {
