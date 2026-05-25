@@ -15,7 +15,7 @@ type Ticket struct {
 
 	Status TicketStatus
 
-	Accessability TicketAccessability
+	Accessibility TicketAccessibility
 
 	User User
 

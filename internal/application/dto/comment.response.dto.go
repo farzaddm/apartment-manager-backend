@@ -13,29 +13,28 @@ type CreateCommentResponse struct {
 	Body           string     `json:"body"`
 	CommittedOrder int        `json:"committed_order"`
 }
-
 type CommentResponse struct {
-	ID             uuid.UUID
-	UserID         *uuid.UUID
-	TicketID       uuid.UUID
-	Body           string
-	CommittedOrder int
+	ID             uuid.UUID  `json:"id"`
+	UserID         *uuid.UUID `json:"user_id"`
+	TicketID       uuid.UUID  `json:"ticket_id"`
+	Body           string     `json:"body"`
+	CommittedOrder int        `json:"committed_order"`
 }
 
 type CommentResponseWithUser struct {
 	CommentResponse
-	User UserResponse
+	User UserResponse `json:"user"`
 }
 
 type CommentResponseWithTicket struct {
 	CommentResponse
-	Ticket TicketBaseResponse
+	Ticket TicketBaseResponse `json:"ticket"`
 }
 
 type CommentResponseWithAllRelations struct {
 	CommentResponse
-	User   UserResponse
-	Ticket TicketBaseResponse
+	User   UserResponse       `json:"user"`
+	Ticket TicketBaseResponse `json:"ticket"`
 }
 
 func MapCommentToResponse(comment *entity.Comment) *CommentResponse {

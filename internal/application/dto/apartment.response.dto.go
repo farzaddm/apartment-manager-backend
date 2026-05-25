@@ -28,21 +28,22 @@ type ApartmentResponse struct {
 
 type ApartmentResponseWithUsers struct {
 	ApartmentResponse
-	Users []UserResponse
+	Users []UserResponse `json:"users"`
 }
 
 type ApartmentResponseWithAnnouncements struct {
 	ApartmentResponse
-	Announcements []AnnouncementResponse
+	Announcements []AnnouncementResponse `json:"announcements"`
 }
 
 type ApartmentResponseWithRules struct {
 	ApartmentResponse
-	Rules []RuleResponse
+	Rules []RuleResponse `json:"rules"`
 }
+
 type ApartmentResponseWithInviteCodes struct {
 	ApartmentResponse
-	InviteCodes []InviteCodeResponse
+	InviteCodes []InviteCodeResponse `json:"invite_codes"`
 }
 
 func MapApartmentToResponse(apartment *entity.Apartment) *ApartmentResponse {

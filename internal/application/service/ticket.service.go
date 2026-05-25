@@ -59,7 +59,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Description:   req.Description,
 		Body:          req.Body,
 		Category:      req.Category,
-		Accessability: req.Accessability,
+		Accessibility: req.Accessibility,
 		Status:        entity.TicketOpen,
 	}
 	err = s.repo.Create(ctx, ticket)
@@ -141,7 +141,7 @@ func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*dto.TicketB
 	}
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
-	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
+	if ticket.Accessibility == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
 		}
@@ -190,7 +190,7 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 	}
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
-	if ticket.Accessability == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
+	if ticket.Accessibility == entity.PrivateTicket && (ticket.UserID == nil || *ticket.UserID != baseUserID) {
 		if !(role == entity.RoleManager || role == entity.RoleAdmin) {
 			return nil, service_error.ErrTicketIsPrivate
 		}

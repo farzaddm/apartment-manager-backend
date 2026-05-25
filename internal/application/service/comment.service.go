@@ -60,7 +60,7 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
 
-	if ticket.Accessability == entity.PrivateTicket && role == entity.RoleResident && (ticket.UserID == nil || baseUserID != *ticket.UserID) {
+	if ticket.Accessibility == entity.PrivateTicket && role == entity.RoleResident && (ticket.UserID == nil || baseUserID != *ticket.UserID) {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 
@@ -194,7 +194,7 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Commen
 	}
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
-	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
+	if comm.Ticket.Accessibility == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 
@@ -237,7 +237,7 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uu
 	}
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
-	if comm.Ticket.Accessability == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
+	if comm.Ticket.Accessibility == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 

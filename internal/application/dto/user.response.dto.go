@@ -24,7 +24,6 @@ type UserResponse struct {
 	Phone     string             `json:"phone"`
 }
 
-// TODO : Hi :)
 type UserResponseWithAllRelations struct {
 	UserResponse
 	Apartment *ApartmentResponse   `json:"apartment"`

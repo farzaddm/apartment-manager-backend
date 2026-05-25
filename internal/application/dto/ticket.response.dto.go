@@ -42,23 +42,23 @@ type TicketBaseResponse struct {
 
 type TicketBaseResponseWithComments struct {
 	TicketBaseResponse
-	Comments []CommentResponse
+	Comments []CommentResponse `json:"comments"`
 }
 
 type TicketBaseResponseWithUser struct {
 	TicketBaseResponse
-	User UserResponse
+	User UserResponse `json:"user"`
 }
 
 type TicketBaseResponseWithAllRelations struct {
 	TicketBaseResponse
-	Comments []CommentResponse
-	User     UserResponse
+	Comments []CommentResponse `json:"comments"`
+	User     UserResponse      `json:"user"`
 }
 
 type TicketBaseResponseWithCommentCount struct {
 	TicketBaseResponse
-	CommentCount int64
+	CommentCount int64 `json:"comment_count"`
 }
 
 func MapTicketToBaseResponse(ticket *entity.Ticket) *TicketBaseResponse {

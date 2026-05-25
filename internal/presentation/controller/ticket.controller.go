@@ -47,7 +47,7 @@ func (c *TicketController) Create(ctx *gin.Context) {
 		Description:   req.Description,
 		Body:          req.Body,
 		Category:      req.Category,
-		Accessability: req.Accessability,
+		Accessibility: req.Accessibility,
 	}
 
 	data, err := c.ticketService.Create(ctx, ticket)

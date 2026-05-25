@@ -18,7 +18,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"title\": \"random job title : {{$randomJobTitle}}\",\r\n  \"description\": \"random city desc : {{$randomCity}}\",\r\n  \"body\": \"random phone body : {{$randomPhoneNumber}}\",\r\n  \"category\": \"electricity\",\r\n  \"accessability\": \"public\"\r\n}\r\n"
+					"raw": "{\r\n  \"title\": \"random job title : {{$randomJobTitle}}\",\r\n  \"description\": \"random city desc : {{$randomCity}}\",\r\n  \"body\": \"random phone body : {{$randomPhoneNumber}}\",\r\n  \"category\": \"electricity\",\r\n  \"accessibility\": \"public\"\r\n}\r\n"
 				},
 				"url": "{{BASE_URL}}/tickets"
 			},

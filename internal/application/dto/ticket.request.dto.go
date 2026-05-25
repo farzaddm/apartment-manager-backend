@@ -11,9 +11,8 @@ type CreateTicketRequest struct {
 	Description   string                     `json:"description"`
 	Body          string                     `json:"body"  binding:"required"`
 	Category      entity.TicketCategory      `json:"category" binding:"required"`
-	Accessability entity.TicketAccessability `json:"accessability" binding:"required"`
+	Accessibility entity.TicketAccessibility `json:"accessibility" binding:"required"`
 }
-
 
 type UpdateTicketRequest struct {
 	Title       string                `json:"title"`
@@ -34,6 +33,3 @@ type TicketFilterRequest struct {
 	Page  int `form:"page"  binding:"required"`
 	Limit int `form:"limit"  binding:"required"`
 }
-
-
-

@@ -97,7 +97,7 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 
 	if !(role == entity.RoleAdmin || role == entity.RoleManager) {
 		query = query.Where(
-			r.db.Where("tickets.accessability = ?", "public").
+			r.db.Where("tickets.accessibility = ?", "public").
 				Or("tickets.user_id = ?", me),
 		)
 	}

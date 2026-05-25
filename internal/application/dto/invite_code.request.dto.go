@@ -11,5 +11,5 @@ type CreateInviteRequest struct {
 }
 
 type ValidateInviteCodeRequest struct {
-	Code string
+	Code string `json:"code"`
 }
