@@ -1,5 +1,6 @@
 package postgres
 
+//TODO : Sort Res List!
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"

@@ -13,13 +13,13 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*entity.Comment, error)
+	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CommentResponse, error)
 
 	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) error
 
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	GetByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error)
 
 	GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error)
 }
@@ -33,7 +33,7 @@ func NewCommentService(commentRepo domainRepo.CommentInterface, ticketRepo domai
 	return &commentService{commentRepo: commentRepo, ticketRepo: ticketRepo}
 }
 
-func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*entity.Comment, error) {
+func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*dto.CommentResponse, error) {
 	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		UserID:         &baseUserID,
 	}
 	err = s.commentRepo.Create(ctx, comment)
-	return comment, nil
+	return dto.MapCommentToResponse(comment), nil
 }
 
 func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) error {
@@ -164,7 +164,7 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Comment, error) {
+func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error) {
 	comm, err := s.commentRepo.GetWithTicket(ctx, id)
 	if err != nil {
 		return nil, err
@@ -193,11 +193,6 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Com
 	}
 
 	c, err := s.commentRepo.GetByID(ctx, id)
-	//TODO : FIX THIS !!!!!!!!!!!
-	c.User.Email = ":)"
-	c.User.Phone = ":)"
-	c.User.Password = ":)"
-	c.User.Role = ":)"
 
 	if err != nil {
 		return nil, err
@@ -205,7 +200,11 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Com
 	if c == nil {
 		return nil, service_error.ErrCommentNotFound
 	}
-	return c, nil
+	return &dto.CommentResponseWithAllRelations{
+		CommentResponse: *dto.MapCommentToResponse(c),
+		User:            *dto.MapUserToUserResponse(&c.User),
+		Ticket:          *dto.MapTicketToBaseResponse(&c.Ticket),
+	}, nil
 }
 
 func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error) {
