@@ -13,7 +13,7 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CommentResponse, error)
+	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error)
 
 	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) error
 
@@ -33,7 +33,7 @@ func NewCommentService(commentRepo domainRepo.CommentInterface, ticketRepo domai
 	return &commentService{commentRepo: commentRepo, ticketRepo: ticketRepo}
 }
 
-func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*dto.CommentResponse, error) {
+func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error) {
 	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,13 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		UserID:         &baseUserID,
 	}
 	err = s.commentRepo.Create(ctx, comment)
-	return dto.MapCommentToResponse(comment), nil
+	return &dto.CreateCommentResponse{
+		ID:             comment.ID,
+		UserID:         comment.UserID,
+		TicketID:       comment.TicketID,
+		Body:           comment.Body,
+		CommittedOrder: comment.CommittedOrder,
+	}, nil
 }
 
 func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) error {

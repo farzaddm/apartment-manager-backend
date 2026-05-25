@@ -13,7 +13,7 @@ import (
 )
 
 type ApartmentService interface {
-	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.ApartmentResponse, error)
+	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error)
 	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
@@ -44,7 +44,7 @@ func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentS
 	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
-func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.ApartmentResponse, error) {
+func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error) {
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -53,7 +53,15 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 		PostalCode: req.PostalCode,
 	}
 	err := s.apartmentRepo.Create(ctx, apartment)
-	return dto.MapApartmentToResponse(apartment), err
+	return &dto.CreateApartmentResponse{
+		ID:           apartment.ID,
+		Name:         apartment.Name,
+		Province:     apartment.Province,
+		City:         apartment.Province,
+		Address:      apartment.Address,
+		PostalCode:   apartment.PostalCode,
+		CreationDate: apartment.CreatedAt.Format("2006-01-02"),
+	}, err
 }
 
 func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error {

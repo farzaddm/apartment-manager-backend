@@ -14,16 +14,16 @@ import (
 )
 
 type TicketService interface {
-	Create(ctx context.Context, ticket *dto.CreateTicketRequest) (*entity.Ticket, error)
+	Create(ctx context.Context, ticket *dto.CreateTicketRequest) (*dto.CreateTicketResponse, error)
 
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	GetByID(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
-	GetByIDSuperAccess(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*dto.TicketBaseResponse, error)
+	getByIDSuperAccess(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
 
-	GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error)
+	GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*dto.TicketBaseResponseWithAllRelations, error)
 
-	List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error)
+	List(ctx context.Context, filter dto.TicketFilterRequest) ([]dto.TicketBaseResponseWithCommentCount, error)
 
 	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error
 	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
@@ -38,7 +38,7 @@ func NewTicketService(repo domainRepo.TicketInterface) TicketService {
 	return &ticketService{repo: repo}
 }
 
-func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*entity.Ticket, error) {
+func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*dto.CreateTicketResponse, error) {
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
@@ -63,7 +63,15 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Status:        entity.TicketOpen,
 	}
 	err = s.repo.Create(ctx, ticket)
-	return ticket, err
+	return &dto.CreateTicketResponse{
+		ID:          ticket.ID,
+		UserID:      ticket.UserID,
+		Title:       ticket.Title,
+		Description: ticket.Description,
+		Body:        ticket.Body,
+		Category:    string(ticket.Category),
+		Status:      string(ticket.Status),
+	}, err
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
@@ -85,7 +93,7 @@ func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
 	str_role := rawRole.(string)
 	role := entity.UserRole(str_role)
 
-	ticket, err := s.GetByIDSuperAccess(ctx, id)
+	ticket, err := s.getByIDSuperAccess(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -106,7 +114,7 @@ func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
+func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*dto.TicketBaseResponse, error) {
 	ticket, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -139,10 +147,10 @@ func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Tick
 		}
 
 	}
-	return ticket, nil
+	return dto.MapTicketToBaseResponse(ticket), nil
 }
 
-func (s *ticketService) GetByIDSuperAccess(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
+func (s *ticketService) getByIDSuperAccess(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
 	ticket, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -155,7 +163,7 @@ func (s *ticketService) GetByIDSuperAccess(ctx context.Context, id uuid.UUID) (*
 	return ticket, nil
 }
 
-func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*entity.Ticket, error) {
+func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUID) (*dto.TicketBaseResponseWithAllRelations, error) {
 	ticket, err := s.repo.GetByIDWithAllRelations(ctx, id)
 	if err != nil {
 		return nil, err
@@ -188,24 +196,15 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 		}
 	}
 
-	//TODO : FIX THIS !!!!!!!
-	ticket.User.Email = ":)"
-	ticket.User.Phone = ":)"
-	ticket.User.Password = ":)"
-	ticket.User.Role = ":)"
-
-	for i := range ticket.Comments {
-		ticket.Comments[i].User.Email = ":)"
-		ticket.Comments[i].User.Phone = ":)"
-		ticket.Comments[i].User.Password = ":)"
-		ticket.Comments[i].User.Role = ":)"
-	}
-
-	return ticket, nil
+	return &dto.TicketBaseResponseWithAllRelations{
+		TicketBaseResponse: *dto.MapTicketToBaseResponse(ticket),
+		Comments:           dto.MapCommentsToSliceResponse(ticket.Comments),
+		User:               *dto.MapUserToUserResponse(&ticket.User),
+	}, nil
 }
 
 // TODO : This list it's not fully
-func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]domainRepo.TicketWithCommentCount, error) {
+func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]dto.TicketBaseResponseWithCommentCount, error) {
 
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
@@ -234,16 +233,11 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	}
 
 	fl, err := s.repo.List(ctx, new_filter, baseUserID, role)
-	//TODO:
-	for i := range fl {
-		x := uuid.MustParse("00000000-0000-0000-0000-000000000000")
-		fl[i].UserID = &x
-	}
 	if err != nil {
 		return nil, err
 	}
 
-	return fl, err
+	return dto.MapTicketsToSliceResponseWithCount(fl), err
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
@@ -258,7 +252,7 @@ func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.Update
 		return service_error.ErrCommonParseStrToUUID
 	}
 
-	ticket, err := s.GetByIDSuperAccess(ctx, id) // it must retrieve a record for checking after that
+	ticket, err := s.getByIDSuperAccess(ctx, id) // it must retrieve a record for checking after that
 	if err != nil {
 		return err
 	}

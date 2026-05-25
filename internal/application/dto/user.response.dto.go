@@ -28,7 +28,7 @@ type UserResponse struct {
 type UserResponseWithAllRelations struct {
 	UserResponse
 	Apartment *ApartmentResponse   `json:"apartment"`
-	Comments  []XXXComment         `json:"comment"`
+	Comments  []CommentResponse    `json:"comment"`
 	Tickets   []TicketBaseResponse `json:"ticket"`
 }
 

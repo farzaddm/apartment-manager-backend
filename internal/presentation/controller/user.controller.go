@@ -1,7 +1,7 @@
 package controller
 
 import (
-	userdto "apartment-manager-backend/internal/application/dto/user"
+	"apartment-manager-backend/internal/application/dto"
 	"apartment-manager-backend/internal/application/service"
 	"apartment-manager-backend/pkg/response"
 	"fmt"
@@ -28,7 +28,7 @@ func (u *UserController) Update(c *gin.Context) {
 		return
 	}
 
-	var req userdto.UpdateProfileRequest
+	var req dto.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "validation_failed", err)
 		return
@@ -50,7 +50,7 @@ func (u *UserController) ChangePassword(c *gin.Context) {
 		return
 	}
 
-	var req userdto.ChangePasswordRequest
+	var req dto.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "validation_failed", err)
 		return

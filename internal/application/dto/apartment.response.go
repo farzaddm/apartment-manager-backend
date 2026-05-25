@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateApartmentResponse struct {
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Province     string    `json:"province"`
+	City         string    `json:"city"`
+	Address      string    `json:"address"`
+	PostalCode   string    `json:"postal_code"`
+	CreationDate string    `json:"creation_date"`
+}
+
 type ApartmentResponse struct {
 	ID           uuid.UUID `json:"id"`
 	Name         string    `json:"name"`
