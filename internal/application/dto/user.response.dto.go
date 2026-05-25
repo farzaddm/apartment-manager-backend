@@ -47,7 +47,7 @@ func MapUserToUserResponse(u *entity.User) *UserResponse {
 }
 
 func MapUsersToSliceResponse(users []entity.User) []UserResponse {
-	if users == nil {
+	if len(users) == 0 {
 		return []UserResponse{}
 	}
 	res := make([]UserResponse, len(users))

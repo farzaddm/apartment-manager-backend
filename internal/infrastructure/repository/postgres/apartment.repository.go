@@ -142,8 +142,8 @@ func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id uuid.
 
 	err := r.db.WithContext(ctx).
 		Preload("Announcements", func(db *gorm.DB) *gorm.DB {
-			return db.Order("is_pinned DESC"). // True =I think= 1 , False = 0
-								Order(`CASE 
+			return db.Order("is_pinned DESC").
+				Order(`CASE 
                 WHEN announcements.order = 'warning' THEN 1 
                 WHEN announcements.order = 'very_important' THEN 2 
                 WHEN announcements.order = 'important' THEN 3 
@@ -151,8 +151,14 @@ func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id uuid.
                 ELSE 5 
             END ASC`)
 		}).
+		Preload("Announcements.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Joins("INNER JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+														Order("tags.name ASC")
+		}).
+		Preload("Announcements.Tags.Tag").
 		First(&apartment, "id = ?", id).
 		Error
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -265,8 +271,8 @@ func (r *apartmentRepository) ListWithAnnouncements(ctx context.Context) ([]enti
 
 	err := r.db.WithContext(ctx).
 		Preload("Announcements", func(db *gorm.DB) *gorm.DB {
-			return db.Order("is_pinned DESC"). // True =I think= 1 , False = 0
-								Order(`CASE 
+			return db.Order("is_pinned DESC").
+				Order(`CASE 
                 WHEN announcements.order = 'warning' THEN 1 
                 WHEN announcements.order = 'very_important' THEN 2 
                 WHEN announcements.order = 'important' THEN 3 
@@ -274,6 +280,11 @@ func (r *apartmentRepository) ListWithAnnouncements(ctx context.Context) ([]enti
                 ELSE 5 
             END ASC`)
 		}).
+		Preload("Announcements.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Joins("INNER JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+														Order("tags.name ASC")
+		}).
+		Preload("Announcements.Tags.Tag").
 		Find(&apartments).
 		Error
 

@@ -25,6 +25,12 @@ func MapAnnouncementToResponse(a *entity.Announcement) *AnnouncementResponse {
 		return nil
 	}
 
+	var tags = make([]TagResponse, 0)
+
+	for i := range a.Tags {
+		tags = append(tags, *MapTagToResponse(&a.Tags[i].Tag))
+	}
+
 	return &AnnouncementResponse{
 		ID:          a.ID,
 		ApartmentID: a.ApartmentID,
@@ -34,7 +40,7 @@ func MapAnnouncementToResponse(a *entity.Announcement) *AnnouncementResponse {
 		Order:       a.Order,
 		IsPinned:    a.IsPinned,
 		ExpiredDate: a.ExpiredDate,
-		Tags:        nil, //TODO : Fix Ann-Tag Relations
+		Tags:        tags, //TODO : Fix Ann-Tag Relations
 		CreatedAt:   a.CreatedAt,
 	}
 }

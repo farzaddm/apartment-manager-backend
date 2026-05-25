@@ -40,7 +40,7 @@ func MapRuleToResponse(rule *entity.Rule) *RuleResponse {
 }
 
 func MapRulesToSliceResponse(rules []entity.Rule) []RuleResponse {
-	if rules == nil {
+	if len(rules) == 0 {
 		return []RuleResponse{}
 	}
 	res := make([]RuleResponse, len(rules))

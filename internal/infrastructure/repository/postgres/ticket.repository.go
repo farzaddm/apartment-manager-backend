@@ -48,8 +48,12 @@ func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.T
 	var ticket entity.Ticket
 
 	err := r.db.WithContext(ctx).
-		Preload("Tags").
-		Order("tags.name").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+				Order("tags.name ASC")
+		}).
+		Preload("Tags.Tag").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -72,7 +76,12 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 			return db.Order("comments.committed_order ASC")
 		}).
 		Preload("Comments.User").
-		Preload("Tags").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+				Order("tags.name ASC")
+		}).
+		Preload("Tags.Tag").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -96,6 +105,7 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		Model(&entity.Ticket{}).
 		Select("tickets.*, COUNT(comments.id) as comment_count").
 		Joins("LEFT JOIN comments ON comments.ticket_id = tickets.id").
+		Order("tickets.create_at ASC").
 		Group("tickets.id")
 
 	if !(role == entity.RoleAdmin || role == entity.RoleManager) {

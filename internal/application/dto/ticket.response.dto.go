@@ -96,8 +96,8 @@ func MapTicketToResponseWithCount(ticket *entity.Ticket, count int64) *TicketBas
 }
 
 func MapTicketsToSliceResponseWithCount(items []domainRepo.TicketWithCommentCount) []TicketBaseResponseWithCommentCount {
-	if items == nil {
-		return nil
+	if len(items) == 0 {
+		return []TicketBaseResponseWithCommentCount{}
 	}
 
 	responses := make([]TicketBaseResponseWithCommentCount, 0, len(items))

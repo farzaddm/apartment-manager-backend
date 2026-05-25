@@ -32,7 +32,7 @@ func MapInviteCodeToResponse(ic *entity.InviteCode) *InviteCodeResponse {
 }
 
 func MapInviteCodesToSliceResponse(codes []entity.InviteCode) []InviteCodeResponse {
-	if codes == nil {
+	if len(codes) == 0 {
 		return []InviteCodeResponse{}
 	}
 	res := make([]InviteCodeResponse, len(codes))
