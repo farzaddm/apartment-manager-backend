@@ -13,18 +13,18 @@ import (
 )
 
 type ApartmentService interface {
-	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*entity.Apartment, error)
+	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.ApartmentResponse, error)
 	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
 
-	GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
-	GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponse, error)
+	// GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
 
-	GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
-	GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
-	GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
-	GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
+	GetWithUsers(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error)
+	GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error)
+	GetWithRules(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithRules, error)
+	GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error)
 
 	// List(ctx context.Context) ([]entity.Apartment, error)
 
@@ -44,7 +44,7 @@ func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentS
 	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
-func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*entity.Apartment, error) {
+func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.ApartmentResponse, error) {
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -53,7 +53,7 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 		PostalCode: req.PostalCode,
 	}
 	err := s.apartmentRepo.Create(ctx, apartment)
-	return apartment, err
+	return dto.MapApartmentToResponse(apartment), err
 }
 
 func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error {
@@ -95,7 +95,7 @@ func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, erro
 	return *exists, nil
 }
 
-func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponse, error) {
 	apartment, err := s.apartmentRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -105,23 +105,23 @@ func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*entity.A
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return apartment, nil
+	return dto.MapApartmentToResponse(apartment), nil
 }
 
-func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
-	apartment, err := s.apartmentRepo.GetByIDWithRelations(ctx, id, relations...)
-	if err != nil {
-		return nil, err
-	}
+// func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
+// 	apartment, err := s.apartmentRepo.GetByIDWithRelations(ctx, id, relations...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	if apartment == nil {
-		return nil, service_error.ErrApartmentNotFound
-	}
+// 	if apartment == nil {
+// 		return nil, service_error.ErrApartmentNotFound
+// 	}
 
-	return apartment, nil
-}
+// 	return apartment, nil
+// }
 
-func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error) {
 	apartment, err := s.apartmentRepo.GetWithUsers(ctx, id)
 	if err != nil {
 		return nil, err
@@ -131,10 +131,13 @@ func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*ent
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return apartment, nil
+	return &dto.ApartmentResponseWithUsers{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		Users:             dto.MapUsersToSliceResponse(apartment.Users),
+	}, nil
 }
 
-func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error) {
 	apartment, err := s.apartmentRepo.GetWithAnnouncements(ctx, id)
 	if err != nil {
 		return nil, err
@@ -144,10 +147,13 @@ func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUI
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return apartment, nil
+	return &dto.ApartmentResponseWithAnnouncements{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		Announcements:     dto.MapAnnouncementsToResponseSlice(apartment.Announcements),
+	}, nil
 }
 
-func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithRules, error) {
 	apartment, err := s.apartmentRepo.GetWithRules(ctx, id)
 	if err != nil {
 		return nil, err
@@ -157,10 +163,13 @@ func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*ent
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return apartment, nil
+	return &dto.ApartmentResponseWithRules{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		Rules:             dto.MapRulesToSliceResponse(apartment.Rules),
+	}, nil
 }
 
-func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error) {
 	apartment, err := s.apartmentRepo.GetWithInviteCodes(ctx, id)
 	if err != nil {
 		return nil, err
@@ -170,7 +179,10 @@ func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID)
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return apartment, nil
+	return &dto.ApartmentResponseWithInviteCodes{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		InviteCodes:       dto.MapInviteCodesToSliceResponse(apartment.InviteCodes),
+	}, nil
 }
 
 // func (s *apartmentService) List(ctx context.Context) ([]entity.Apartment, error) {

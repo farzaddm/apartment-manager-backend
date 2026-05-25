@@ -1,5 +1,6 @@
 package postgres
 
+//TODO : Sort Lists!
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
@@ -95,27 +96,27 @@ func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entit
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
-	var apartment entity.Apartment
+// func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
+// 	var apartment entity.Apartment
 
-	query := r.db.WithContext(ctx)
+// 	query := r.db.WithContext(ctx)
 
-	for _, relation := range relations {
-		query = query.Preload(relation)
-	}
+// 	for _, relation := range relations {
+// 		query = query.Preload(relation)
+// 	}
 
-	err := query.
-		First(&apartment, "id = ?", id).
-		Error
+// 	err := query.
+// 		First(&apartment, "id = ?", id).
+// 		Error
 
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &apartment, nil
-}
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return nil, nil
+// 		}
+// 		return nil, err
+// 	}
+// 	return &apartment, nil
+// }
 
 func (r *apartmentRepository) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment

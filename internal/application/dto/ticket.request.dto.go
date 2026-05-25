@@ -14,15 +14,16 @@ type CreateTicketRequest struct {
 	Accessability entity.TicketAccessability `json:"accessability" binding:"required"`
 }
 
-type CreateTicketResponse struct {
-	ID            uuid.UUID                  `json:"id"`
-	UserID        *uuid.UUID                 `json:"user_id"`
-	Title         string                     `json:"title"`
-	Description   string                     `json:"description"`
-	Body          string                     `json:"body" `
-	Category      entity.TicketCategory      `json:"category"`
-	Accessability entity.TicketAccessability `json:"accessability"`
-	Status        entity.TicketStatus        `json:"status"`
+// TODO : Coupling TicketResponse!!!!!! Remove one of them!!!!!
+type TicketBaseResponse struct {
+	ID          uuid.UUID     `json:"id"`
+	UserID      *uuid.UUID    `json:"user_id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Body        string        `json:"body"`
+	Category    string        `json:"category"`
+	Status      string        `json:"status"`
+	Tags        []TagResponse `json:"tags"`
 }
 
 type UpdateTicketRequest struct {
@@ -43,4 +44,20 @@ type TicketFilterRequest struct {
 
 	Page  int `form:"page"  binding:"required"`
 	Limit int `form:"limit"  binding:"required"`
+}
+
+func MapTicketTotResponse(ticket *entity.Ticket) *TicketBaseResponse {
+	if ticket == nil {
+		return nil
+	}
+	return &TicketBaseResponse{
+		ID:          ticket.ID,
+		UserID:      ticket.UserID,
+		Title:       ticket.Title,
+		Description: ticket.Description,
+		Body:        ticket.Body,
+		Category:    string(ticket.Category),
+		Status:      string(ticket.Status),
+		Tags:        nil, //TODO : Fix Ticket-Tags Relation
+	}
 }

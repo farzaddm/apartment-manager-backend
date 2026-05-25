@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"apartment-manager-backend/internal/domain/entity"
+
+	"github.com/google/uuid"
+)
 
 type CreateTagRequest struct {
 	Name string `json:"name" binding:"required,min=2,max=50"`
@@ -9,4 +13,31 @@ type CreateTagRequest struct {
 type TagResponse struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
+}
+
+func MapTagToResponse(tag *entity.Tag) *TagResponse {
+	if tag == nil {
+		return nil
+	}
+
+	return &TagResponse{
+		ID:   tag.ID,
+		Name: tag.Name,
+	}
+}
+
+func MapTagsToSliceResponse(tags []*entity.Tag) []TagResponse {
+	if len(tags) == 0 {
+		return []TagResponse{}
+	}
+
+	res := make([]TagResponse, 0, len(tags))
+	for _, t := range tags {
+		if t == nil {
+			continue
+		}
+		res = append(res, *MapTagToResponse(t))
+	}
+
+	return res
 }

@@ -39,3 +39,36 @@ type AnnouncementResponse struct {
 	Tags        []TagResponse            `json:"tags"`
 	CreatedAt   time.Time                `json:"created_at"`
 }
+
+func MapAnnouncementToResponse(a *entity.Announcement) *AnnouncementResponse {
+	if a == nil {
+		return nil
+	}
+
+	return &AnnouncementResponse{
+		ID:          a.ID,
+		ApartmentID: a.ApartmentID,
+		Title:       a.Title,
+		Description: a.Description,
+		Body:        a.Body,
+		Order:       a.Order,
+		IsPinned:    a.IsPinned,
+		ExpiredDate: a.ExpiredDate,
+		Tags:        nil, //TODO : Fix Ann-Tag Relations
+		CreatedAt:   a.CreatedAt,
+	}
+}
+
+func MapAnnouncementsToResponseSlice(list []entity.Announcement) []AnnouncementResponse {
+	if len(list) == 0 {
+		return []AnnouncementResponse{}
+	}
+
+	result := make([]AnnouncementResponse, 0, len(list))
+
+	for _, item := range list {
+		result = append(result, *MapAnnouncementToResponse(&item))
+	}
+
+	return result
+}

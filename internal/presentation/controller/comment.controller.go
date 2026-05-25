@@ -5,6 +5,7 @@ import (
 	"apartment-manager-backend/internal/application/service"
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/pkg/response"
+	"apartment-manager-backend/pkg/validator"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -70,7 +71,15 @@ func (h *CommentController) UpdateBody(ctx *gin.Context) {
 
 	var req dto.UpdateCommentRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 

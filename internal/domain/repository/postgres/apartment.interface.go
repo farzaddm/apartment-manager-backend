@@ -15,7 +15,7 @@ type ApartmentInterface interface {
 
 	GetByID(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
 
-	GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
+	// GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
 
 	GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
 	GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)

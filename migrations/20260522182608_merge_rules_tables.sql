@@ -30,6 +30,54 @@ CREATE TRIGGER update_rules_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 
+
+
+INSERT INTO rules (id, apartment_id, title, description, category)
+VALUES 
+(
+    '11111111-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Pet Policy', 
+    'Pets must be kept on a leash at all times in common areas.', 
+    'pet_policy'
+),
+(
+    '22222222-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Noise Regulations', 
+    'Quiet hours are from 11:00 PM to 7:00 AM daily.', 
+    'noise_regulations'
+),
+(
+    '33333333-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Gym Rules', 
+    'Please wipe down gym machines after usage.', 
+    'gym_rules'
+),
+(
+    '44444444-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Garbage & Recycling', 
+    'Cardboard boxes must be flattened before being placed in chutes.', 
+    'garbage_recycling'
+),
+(
+    '55555555-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Parking Bylaws', 
+    'Visitor parking is restricted to a maximum of 24 consecutive hours.', 
+    'parking_bylaws'
+),
+(
+    '66666666-ffff-ffff-ffff-ffffffffffff', 
+    'a0000000-0000-0000-0000-000000000000', 
+    'Pool Policy', 
+    'No glass containers allowed in the pool enclosure.', 
+    'pool_policy'
+);
+
+
 -- +goose Down
 DROP TABLE IF EXISTS rules CASCADE;
 
