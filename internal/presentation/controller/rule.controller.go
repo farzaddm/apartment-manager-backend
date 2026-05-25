@@ -31,7 +31,19 @@ func (c *RuleController) Create(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.ruleService.Create(ctx.Request.Context(), aptID, req)
+	userRoleVal, _ := ctx.Get("role")
+	userRole, _ := userRoleVal.(string)
+
+	userApartmentIDVal, _ := ctx.Get("apartment_id")
+	var userApartmentID *uuid.UUID = nil
+	if userApartmentIDVal != nil {
+		uaIDStr, _ := userApartmentIDVal.(string)
+		if parsed, errParse := uuid.Parse(uaIDStr); errParse == nil {
+			userApartmentID = &parsed
+		}
+	}
+
+	res, err := c.ruleService.Create(ctx.Request.Context(), aptID, userApartmentID, userRole, req)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
@@ -51,7 +63,19 @@ func (c *RuleController) Get(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.ruleService.GetByID(ctx.Request.Context(), id, aptID)
+	userRoleVal, _ := ctx.Get("role")
+	userRole, _ := userRoleVal.(string)
+
+	userApartmentIDVal, _ := ctx.Get("apartment_id")
+	var userApartmentID *uuid.UUID = nil
+	if userApartmentIDVal != nil {
+		uaIDStr, _ := userApartmentIDVal.(string)
+		if parsed, errParse := uuid.Parse(uaIDStr); errParse == nil {
+			userApartmentID = &parsed
+		}
+	}
+
+	res, err := c.ruleService.GetByID(ctx.Request.Context(), id, aptID, userApartmentID, userRole)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
@@ -67,13 +91,25 @@ func (c *RuleController) List(ctx *gin.Context) {
 		return
 	}
 
+	userRoleVal, _ := ctx.Get("role")
+	userRole, _ := userRoleVal.(string)
+
+	userApartmentIDVal, _ := ctx.Get("apartment_id")
+	var userApartmentID *uuid.UUID = nil
+	if userApartmentIDVal != nil {
+		uaIDStr, _ := userApartmentIDVal.(string)
+		if parsed, errParse := uuid.Parse(uaIDStr); errParse == nil {
+			userApartmentID = &parsed
+		}
+	}
+
 	category := ctx.Query("category")
 	var res []dto.RuleResponse
 
 	if category != "" {
-		res, err = c.ruleService.ListByApartmentAndCategory(ctx.Request.Context(), aptID, category)
+		res, err = c.ruleService.ListByApartmentAndCategory(ctx.Request.Context(), aptID, userApartmentID, userRole, category)
 	} else {
-		res, err = c.ruleService.ListByApartmentID(ctx.Request.Context(), aptID)
+		res, err = c.ruleService.ListByApartmentID(ctx.Request.Context(), aptID, userApartmentID, userRole)
 	}
 
 	if err != nil {
@@ -102,7 +138,19 @@ func (c *RuleController) Update(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.ruleService.Update(ctx.Request.Context(), id, aptID, req)
+	userRoleVal, _ := ctx.Get("role")
+	userRole, _ := userRoleVal.(string)
+
+	userApartmentIDVal, _ := ctx.Get("apartment_id")
+	var userApartmentID *uuid.UUID = nil
+	if userApartmentIDVal != nil {
+		uaIDStr, _ := userApartmentIDVal.(string)
+		if parsed, errParse := uuid.Parse(uaIDStr); errParse == nil {
+			userApartmentID = &parsed
+		}
+	}
+
+	res, err := c.ruleService.Update(ctx.Request.Context(), id, aptID, userApartmentID, userRole, req)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
@@ -122,7 +170,19 @@ func (c *RuleController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.ruleService.Delete(ctx.Request.Context(), id, aptID); err != nil {
+	userRoleVal, _ := ctx.Get("role")
+	userRole, _ := userRoleVal.(string)
+
+	userApartmentIDVal, _ := ctx.Get("apartment_id")
+	var userApartmentID *uuid.UUID = nil
+	if userApartmentIDVal != nil {
+		uaIDStr, _ := userApartmentIDVal.(string)
+		if parsed, errParse := uuid.Parse(uaIDStr); errParse == nil {
+			userApartmentID = &parsed
+		}
+	}
+
+	if err := c.ruleService.Delete(ctx.Request.Context(), id, aptID, userApartmentID, userRole); err != nil {
 		response.Error(ctx, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
