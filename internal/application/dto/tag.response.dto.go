@@ -22,17 +22,14 @@ func MapTagToResponse(tag *entity.Tag) *TagResponse {
 	}
 }
 
-func MapTagsToSliceResponse(tags []*entity.Tag) []TagResponse {
+func MapTagsToSliceResponse(tags []entity.Tag) []TagResponse {
 	if len(tags) == 0 {
 		return []TagResponse{}
 	}
 
 	res := make([]TagResponse, 0, len(tags))
-	for _, t := range tags {
-		if t == nil {
-			continue
-		}
-		res = append(res, *MapTagToResponse(t))
+	for i := range tags {
+		res = append(res, *MapTagToResponse(&tags[i]))
 	}
 
 	return res

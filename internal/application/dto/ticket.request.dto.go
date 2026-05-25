@@ -12,7 +12,7 @@ type CreateTicketRequest struct {
 	Body          string                     `json:"body"  binding:"required"`
 	Category      entity.TicketCategory      `json:"category" binding:"required"`
 	Accessibility entity.TicketAccessibility `json:"accessibility" binding:"required"`
-	// TagNames      []string                   `json:"tag_names" binding:"omitempty"` //TODO : Farzad!!!
+	TagIDs        []uuid.UUID                `json:"tag_ids" binding:"omitempty"`
 }
 
 type UpdateTicketRequest struct {

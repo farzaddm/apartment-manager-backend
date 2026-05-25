@@ -32,13 +32,15 @@ type TicketService interface {
 }
 
 type ticketService struct {
-	repo domainRepo.TicketInterface
+	repo    domainRepo.TicketInterface
+	tagRepo domainRepo.TagInterface
 }
 
-func NewTicketService(repo domainRepo.TicketInterface) TicketService {
-	return &ticketService{repo: repo}
+func NewTicketService(repo domainRepo.TicketInterface, tagRepo domainRepo.TagInterface) TicketService {
+	return &ticketService{repo: repo, tagRepo: tagRepo}
 }
 
+// TODO : How Ticket Can Create Record on Ticket_Ann_Tag Table ?! {Farzard}
 func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*dto.CreateTicketResponse, error) {
 	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
@@ -64,6 +66,10 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Status:        entity.TicketOpen,
 	}
 	err = s.repo.Create(ctx, ticket)
+	tags, err := s.tagRepo.FindByIDs(ctx, req.TagIDs) // TODO : Check Err Types
+	if err != nil {
+		return nil, err
+	}
 	return &dto.CreateTicketResponse{
 		ID:          ticket.ID,
 		UserID:      ticket.UserID,
@@ -73,6 +79,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Category:    string(ticket.Category),
 		Status:      string(ticket.Status),
 		CreatedAt:   ticket.CreatedAt,
+		Tags:        dto.MapTagsToSliceResponse(tags),
 	}, err
 }
 

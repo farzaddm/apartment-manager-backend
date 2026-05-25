@@ -28,6 +28,7 @@ type CreateTicketResponse struct {
 	Category    string     `json:"category"`
 	Status      string     `json:"status"`
 	CreatedAt   time.Time  `json:"created_at"`
+	Tags        []TagResponse
 }
 
 // // TODO : Coupling TicketResponse!!!!!! Remove one of them!!!!!

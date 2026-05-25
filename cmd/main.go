@@ -72,7 +72,7 @@ func main() {
 	)
 	userService := service.NewUserService(userRepo, passwordHasher)
 	apartmentSrv := service.NewApartmentService(apartmentRepo)
-	ticketSrv := service.NewTicketService(ticketRepo)
+	ticketSrv := service.NewTicketService(ticketRepo, tagRepo)
 	inviteCodeService := service.NewInviteCodeService(inviteCodeRepo, unitRepo, apartmentRepo)
 	tagService := service.NewTagService(tagRepo)
 	announcementService := service.NewAnnouncementService(announcementRepo, tagRepo)
