@@ -49,6 +49,7 @@ func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.T
 
 	err := r.db.WithContext(ctx).
 		Preload("Tags").
+		Order("tags.name").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -67,7 +68,9 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 
 	err := r.db.WithContext(ctx).
 		Preload("User").
-		Preload("Comments").
+		Preload("Comments", func(db *gorm.DB) *gorm.DB {
+			return db.Order("comments.committed_order ASC")
+		}).
 		Preload("Comments.User").
 		Preload("Tags").
 		First(&ticket, "id = ?", id).

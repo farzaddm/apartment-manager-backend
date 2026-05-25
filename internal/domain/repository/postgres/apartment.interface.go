@@ -24,7 +24,7 @@ type ApartmentInterface interface {
 
 	List(ctx context.Context) ([]entity.Apartment, error)
 
-	ListWithRelations(ctx context.Context, relations ...string) ([]entity.Apartment, error)
+	// ListWithRelations(ctx context.Context, relations ...string) ([]entity.Apartment, error)
 
 	ListWithUsers(ctx context.Context) ([]entity.Apartment, error)
 	ListWithAnnouncements(ctx context.Context) ([]entity.Apartment, error)
