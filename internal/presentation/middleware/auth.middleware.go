@@ -45,6 +45,11 @@ func AuthMiddleware(tokenService jwt.TokenServiceInterface) gin.HandlerFunc {
 		c.Set(constant.UserIDKeyToken, claims.UserID.String())
 		c.Set(constant.RoleKeyToken, claims.Role)
 
+		if claims.ApartmentID != nil {
+			c.Set(constant.ApartmentIDKeyToken, claims.ApartmentID.String())
+		}
+
+
 		c.Next()
 	}
 }

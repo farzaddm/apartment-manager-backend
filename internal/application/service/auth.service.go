@@ -133,12 +133,12 @@ func (s *AuthService) VerifyOTP(ctx context.Context, phone, code string) (*dto.V
 		}, nil
 	}
 
-	accessToken, err := s.tokenService.GenerateAccessToken(user.ID, string(user.Role))
+	accessToken, err := s.tokenService.GenerateAccessToken(user.ID, string(user.Role), user.ApartmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.tokenService.GenerateRefreshToken(user.ID, string(user.Role))
+	refreshToken, err := s.tokenService.GenerateRefreshToken(user.ID, string(user.Role), user.ApartmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -208,12 +208,12 @@ func (s *AuthService) Register(ctx context.Context, input dto.RegisterInput) (*d
 
 	_ = s.otpRepo.DeleteVerified(input.Phone)
 
-	accessToken, err := s.tokenService.GenerateAccessToken(newUser.ID, string(newUser.Role))
+	accessToken, err := s.tokenService.GenerateAccessToken(newUser.ID, string(newUser.Role), newUser.ApartmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.tokenService.GenerateRefreshToken(newUser.ID, string(newUser.Role))
+	refreshToken, err := s.tokenService.GenerateRefreshToken(newUser.ID, string(newUser.Role), newUser.ApartmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -251,12 +251,12 @@ func (s *AuthService) Login(ctx context.Context, input dto.LoginInput) (*dto.Log
 		return nil, errors.New("invalid_credentials")
 	}
 
-	accessToken, err := s.tokenService.GenerateAccessToken(user.ID, string(user.Role))
+	accessToken, err := s.tokenService.GenerateAccessToken(user.ID, string(user.Role), user.ApartmentID)
 	if err != nil {
 		return nil, errors.New("failed_to_generate_access_token")
 	}
 
-	refreshToken, err := s.tokenService.GenerateRefreshToken(user.ID, string(user.Role))
+	refreshToken, err := s.tokenService.GenerateRefreshToken(user.ID, string(user.Role), user.ApartmentID)
 	if err != nil {
 		return nil, errors.New("failed_to_generate_refresh_token")
 	}
@@ -296,7 +296,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, input dto.RefreshInput) 
 		return nil, errors.New("session_expired_or_revoked")
 	}
 
-	newAccessToken, err := s.tokenService.GenerateAccessToken(claims.UserID, claims.Role)
+	newAccessToken, err := s.tokenService.GenerateAccessToken(claims.UserID, claims.Role, claims.ApartmentID)
 	if err != nil {
 		return nil, err
 	}

@@ -15,5 +15,5 @@ type Poll struct {
 	ExpiresAt     *time.Time
 	IsVotesPublic bool
 
-	Apartment Apartment
+	Options []PollOption `gorm:"foreignKey:PollID;constraint:OnDelete:CASCADE;"`
 }

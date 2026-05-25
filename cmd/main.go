@@ -32,6 +32,18 @@ func main() {
 		log.Fatal("database not reachable")
 	}
 
+	// --- MIGRATIONS ---
+	//goose.SetBaseFS(migrations.FS)
+	//if err := goose.SetDialect("postgres"); err != nil {
+	//	log.Fatalf("failed to set goose dialect: %v", err)
+	//}
+	//
+	//log.Println("Running database migrations...")
+	//if err := goose.Up(sqlDB, "."); err != nil {
+	//	log.Fatalf("failed to run migrations: %v", err)
+	//}
+	//log.Println("Migrations completed successfully!")
+
 	// --- REDIS ---
 	redisClient := database.NewRedisClient(cfg.Redis)
 	err = redisClient.Set(database.Ctx, "test", "ok", 0).Err()
@@ -52,6 +64,7 @@ func main() {
 	announcementRepo := postgres.NewAnnouncementRepository(db)
 	commentRepo := postgres.NewCommentRepository(db)
 	ruleRepo := postgres.NewRuleRepository(db)
+	pollRepo := postgres.NewPollRepository(db)
 
 	// ------ SMS ------
 	smsService := sms.NewFileSMS("otp_log.txt")
@@ -78,6 +91,7 @@ func main() {
 	announcementService := service.NewAnnouncementService(announcementRepo, tagRepo)
 	commentService := service.NewCommentService(commentRepo, ticketRepo)
 	ruleService := service.NewRuleService(ruleRepo)
+	pollService := service.NewPollService(pollRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
@@ -89,6 +103,7 @@ func main() {
 	announcementController := controller.NewAnnouncementController(announcementService)
 	commentController := controller.NewCommentController(commentService)
 	ruleController := controller.NewRuleController(ruleService)
+	pollController := controller.NewPollController(pollService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -101,6 +116,7 @@ func main() {
 		Announcement: announcementController,
 		Comment:      commentController,
 		Rule:         ruleController,
+		Poll:         pollController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)

@@ -18,7 +18,11 @@ func NewRuleService(ruleRepo postgres.RuleRepository) *RuleService {
 	return &RuleService{ruleRepo: ruleRepo}
 }
 
-func (s *RuleService) Create(ctx context.Context, apartmentID uuid.UUID, req dto.CreateRuleRequest) (*dto.RuleResponse, error) {
+func (s *RuleService) Create(ctx context.Context, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string, req dto.CreateRuleRequest) (*dto.RuleResponse, error) {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return nil, errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rule := &entity.Rule{
 		BaseModel:   entity.BaseModel{ID: uuid.New()},
 		ApartmentID: apartmentID,
@@ -34,7 +38,11 @@ func (s *RuleService) Create(ctx context.Context, apartmentID uuid.UUID, req dto
 	return s.mapToResponse(rule), nil
 }
 
-func (s *RuleService) GetByID(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID) (*dto.RuleResponse, error) {
+func (s *RuleService) GetByID(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string) (*dto.RuleResponse, error) {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return nil, errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rule, err := s.ruleRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -45,7 +53,11 @@ func (s *RuleService) GetByID(ctx context.Context, id uuid.UUID, apartmentID uui
 	return s.mapToResponse(rule), nil
 }
 
-func (s *RuleService) ListByApartmentID(ctx context.Context, apartmentID uuid.UUID) ([]dto.RuleResponse, error) {
+func (s *RuleService) ListByApartmentID(ctx context.Context, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string) ([]dto.RuleResponse, error) {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return nil, errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rules, err := s.ruleRepo.GetByApartmentID(ctx, apartmentID)
 	if err != nil {
 		return nil, err
@@ -58,7 +70,11 @@ func (s *RuleService) ListByApartmentID(ctx context.Context, apartmentID uuid.UU
 	return resp, nil
 }
 
-func (s *RuleService) ListByApartmentAndCategory(ctx context.Context, apartmentID uuid.UUID, category string) ([]dto.RuleResponse, error) {
+func (s *RuleService) ListByApartmentAndCategory(ctx context.Context, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string, category string) ([]dto.RuleResponse, error) {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return nil, errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rules, err := s.ruleRepo.GetByApartmentAndCategory(ctx, apartmentID, entity.RuleCategory(category))
 	if err != nil {
 		return nil, err
@@ -71,7 +87,11 @@ func (s *RuleService) ListByApartmentAndCategory(ctx context.Context, apartmentI
 	return resp, nil
 }
 
-func (s *RuleService) Update(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID, req dto.UpdateRuleRequest) (*dto.RuleResponse, error) {
+func (s *RuleService) Update(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string, req dto.UpdateRuleRequest) (*dto.RuleResponse, error) {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return nil, errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rule, err := s.ruleRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -97,7 +117,11 @@ func (s *RuleService) Update(ctx context.Context, id uuid.UUID, apartmentID uuid
 	return s.mapToResponse(rule), nil
 }
 
-func (s *RuleService) Delete(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID) error {
+func (s *RuleService) Delete(ctx context.Context, id uuid.UUID, apartmentID uuid.UUID, userApartmentID *uuid.UUID, userRole string) error {
+	if userRole != "admin" && (userApartmentID == nil || *userApartmentID != apartmentID) {
+		return errors.New("access denied: you do not belong to this apartment")
+	}
+
 	rule, err := s.ruleRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
