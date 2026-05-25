@@ -10,6 +10,6 @@ type Vote struct {
 	UserID   uuid.UUID
 	OptionID uuid.UUID
 
-	User       User
-	PollOption PollOption
+	User   User       `gorm:"foreignKey:UserID"`
+	Option PollOption `gorm:"foreignKey:OptionID"`
 }

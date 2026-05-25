@@ -18,6 +18,7 @@ type Controllers struct {
 	Announcement *controller.AnnouncementController
 	Comment      *controller.CommentController
 	Rule         *controller.RuleController
+	Poll         *controller.PollController
 }
 
 func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.Engine {
@@ -76,6 +77,13 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		protected.GET("/apartments/:apartment_id/rules/:id", handler.Rule.Get)
 		managementGroup.PUT("/apartments/:apartment_id/rules/:id", handler.Rule.Update)
 		managementGroup.DELETE("/apartments/:apartment_id/rules/:id", handler.Rule.Delete)
+
+		managementGroup.POST("/apartments/:apartment_id/polls", handler.Poll.Create)
+		managementGroup.DELETE("/apartments/:apartment_id/polls/:poll_id", handler.Poll.Delete)
+		protected.GET("/apartments/:apartment_id/polls", handler.Poll.List)
+		protected.GET("/apartments/:apartment_id/polls/:poll_id", handler.Poll.GetDetails)
+		protected.POST("/apartments/:apartment_id/polls/:poll_id/votes", handler.Poll.CastVote)
+		protected.DELETE("/apartments/:apartment_id/polls/:poll_id/votes", handler.Poll.RevokeVote)
 	}
 
 	return r

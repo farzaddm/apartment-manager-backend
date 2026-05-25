@@ -43,6 +43,9 @@ func AuthMiddleware(tokenService jwt.TokenServiceInterface) gin.HandlerFunc {
 		//TODO : declare const variable name instead of these static values
 		c.Set("user_id", claims.UserID.String())
 		c.Set("role", claims.Role)
+		if claims.ApartmentID != nil {
+			c.Set("apartment_id", claims.ApartmentID.String())
+		}
 
 		c.Next()
 	}

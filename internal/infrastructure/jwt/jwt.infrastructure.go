@@ -20,23 +20,27 @@ func NewTokenService(cfg config.JWTConfig) domainJwt.TokenServiceInterface {
 	}
 }
 
-func (s *tokenService) GenerateAccessToken(userID uuid.UUID, role string) (string, error) {
+func (s *tokenService) GenerateAccessToken(userID uuid.UUID, role string, apartmentID *uuid.UUID) (string, error) {
 	duration := time.Duration(s.cfg.AccessExpireMinutes) * time.Minute
-	return s.generateToken(userID, role, s.cfg.AccessSecret, "access", duration)
+	return s.generateToken(userID, role, apartmentID, s.cfg.AccessSecret, "access", duration)
 }
 
-func (s *tokenService) GenerateRefreshToken(userID uuid.UUID, role string) (string, error) {
+func (s *tokenService) GenerateRefreshToken(userID uuid.UUID, role string, apartmentID *uuid.UUID) (string, error) {
 	duration := time.Duration(s.cfg.RefreshExpireDays) * 24 * time.Hour
-	return s.generateToken(userID, role, s.cfg.RefreshSecret, "refresh", duration)
+	return s.generateToken(userID, role, apartmentID, s.cfg.RefreshSecret, "refresh", duration)
 }
 
-func (s *tokenService) generateToken(userID uuid.UUID, role string, secret string, tokenType string, duration time.Duration) (string, error) {
+func (s *tokenService) generateToken(userID uuid.UUID, role string, apartmentID *uuid.UUID, secret string, tokenType string, duration time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id":    userID.String(),
 		"role":       role,
 		"token_type": tokenType,
 		"exp":        time.Now().Add(duration).Unix(),
 		"iat":        time.Now().Unix(),
+	}
+
+	if apartmentID != nil {
+		claims["apartment_id"] = apartmentID.String()
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -68,11 +72,19 @@ func (s *tokenService) ValidateToken(tokenString string) (*domainJwt.MapClaims, 
 		userIDStr, _ := claimsMap["user_id"].(string)
 		userID, _ := uuid.Parse(userIDStr)
 
+		var aptID *uuid.UUID = nil
+		if aptIDStr, exists := claimsMap["apartment_id"].(string); exists && aptIDStr != "" {
+			if parsed, err := uuid.Parse(aptIDStr); err == nil {
+				aptID = &parsed
+			}
+		}
+
 		return &domainJwt.MapClaims{
-			UserID:    userID,
-			Role:      claimsMap["role"].(string),
-			TokenType: claimsMap["token_type"].(string),
-			ExpiresAt: int64(claimsMap["exp"].(float64)),
+			UserID:      userID,
+			Role:        claimsMap["role"].(string),
+			TokenType:   claimsMap["token_type"].(string),
+			ExpiresAt:   int64(claimsMap["exp"].(float64)),
+			ApartmentID: aptID,
 		}, nil
 	}
 
