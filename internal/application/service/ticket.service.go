@@ -25,8 +25,8 @@ type TicketService interface {
 
 	List(ctx context.Context, filter dto.TicketFilterRequest) ([]dto.TicketBaseResponseWithCommentCount, error)
 
-	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error
-	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
+	Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) (*dto.TicketBaseResponse, error)
+	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) (*dto.TicketBaseResponse, error)
 	GetUserTickets(ctx context.Context, userID string) ([]dto.TicketResponse, error)
 }
 
@@ -240,54 +240,55 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	return dto.MapTicketsToSliceResponseWithCount(fl), err
 }
 
-func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) error {
+func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) (*dto.TicketBaseResponse, error) {
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
-		return service_error.ErrUserIDNotFoundInContext
+		return nil, service_error.ErrUserIDNotFoundInContext
 	}
 	str_baseUserID := rawBaseUserID.(string)
 	baseUserID, err := uuid.Parse(str_baseUserID)
 
 	if err != nil {
-		return service_error.ErrCommonParseStrToUUID
+		return nil, service_error.ErrCommonParseStrToUUID
 	}
 
 	ticket, err := s.getByIDSuperAccess(ctx, id) // it must retrieve a record for checking after that
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if ticket.UserID == nil || baseUserID != *(ticket.UserID) {
-		return service_error.ErrTicketUnauthorizedAccess
+		return nil, service_error.ErrTicketUnauthorizedAccess
 	}
 
-	if err := s.repo.UpdateCategory(ctx, id, req.Category); err != nil {
+	if _, err = s.repo.UpdateCategory(ctx, id, req.Category); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrTicketNotFound
+			return nil, service_error.ErrTicketNotFound
 		}
-		return err
+		return nil, err
 	}
 
-	if err := s.repo.UpdateContent(ctx, id, req.Title, req.Description, req.Body); err != nil {
+	var t *entity.Ticket
+	if t, err = s.repo.UpdateContent(ctx, id, req.Title, req.Description, req.Body); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrTicketNotFound
+			return nil, service_error.ErrTicketNotFound
 		}
-		return err
+		return nil, err
 	}
 
-	return nil
+	return dto.MapTicketToBaseResponse(t), nil
 }
 
-func (s *ticketService) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error {
-	err := s.repo.UpdateStatus(ctx, id, status)
+func (s *ticketService) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) (*dto.TicketBaseResponse, error) {
+	t, err := s.repo.UpdateStatus(ctx, id, status)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrTicketNotFound
+			return nil, service_error.ErrTicketNotFound
 		}
-		return err
+		return nil, err
 	}
 
-	return nil
+	return dto.MapTicketToBaseResponse(t), nil
 }
 
 func MapTicketsToResponse(domainTickets []entity.Ticket) []dto.TicketResponse {

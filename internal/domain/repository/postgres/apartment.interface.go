@@ -9,7 +9,7 @@ import (
 
 type ApartmentInterface interface {
 	Create(ctx context.Context, apartment *entity.Apartment) error
-	Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) error
+	Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) (*entity.Apartment, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (*bool, error)
 

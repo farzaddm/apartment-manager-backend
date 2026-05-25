@@ -77,7 +77,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 			Errors:     errList,
 		}
 		res.SendResponse(ctx)
-				return
+		return
 	}
 
 	apartment := &dto.UpdateApartmentRequest{
@@ -88,7 +88,8 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	if err := c.apartmentService.Update(ctx, id, apartment); err != nil {
+	var data *dto.ApartmentResponse
+	if data, err = c.apartmentService.Update(ctx, id, apartment); err != nil {
 		if errors.Is(err, service_error.ErrApartmentNotFound) {
 			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
 			return
@@ -97,7 +98,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", data)
 }
 
 func (c *ApartmentController) Delete(ctx *gin.Context) {

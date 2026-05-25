@@ -150,7 +150,8 @@ func (c *TicketController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.ticketService.Update(ctx, id, req); err != nil {
+	var data *dto.TicketBaseResponse
+	if data, err = c.ticketService.Update(ctx, id, req); err != nil {
 		switch err {
 
 		case service_error.ErrTicketNotFound:
@@ -175,7 +176,7 @@ func (c *TicketController) Update(ctx *gin.Context) {
 		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_updated_successfully", data)
 }
 
 func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
@@ -202,7 +203,8 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.ticketService.UpdateStatus(ctx, id, req.Status); err != nil {
+	var data *dto.TicketBaseResponse
+	if data, err = c.ticketService.UpdateStatus(ctx, id, req.Status); err != nil {
 		switch err {
 		case service_error.ErrTicketNotFound:
 			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
@@ -214,7 +216,7 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket_status_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_status_updated_successfully", data)
 }
 
 func (c *TicketController) Delete(ctx *gin.Context) {

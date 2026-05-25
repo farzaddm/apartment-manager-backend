@@ -83,7 +83,7 @@ func (h *CommentController) UpdateBody(ctx *gin.Context) {
 		return
 	}
 
-	err = h.commentService.Update(ctx, id, &req)
+	data, err := h.commentService.Update(ctx, id, &req)
 	if err != nil {
 		switch err {
 
@@ -113,7 +113,7 @@ func (h *CommentController) UpdateBody(ctx *gin.Context) {
 		}
 	}
 
-	response.Success(ctx, http.StatusOK, "comment_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "comment_updated_successfully", data)
 }
 
 func (h *CommentController) Delete(ctx *gin.Context) {

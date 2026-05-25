@@ -14,7 +14,7 @@ import (
 
 type ApartmentService interface {
 	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error)
-	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error
+	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
 
@@ -64,7 +64,7 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 	}, err
 }
 
-func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) error {
+func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error) {
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -72,15 +72,15 @@ func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.Up
 		Address:    req.Address,
 		PostalCode: req.PostalCode,
 	}
-	err := s.apartmentRepo.Update(ctx, id, apartment)
+	apar, err := s.apartmentRepo.Update(ctx, id, apartment)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrApartmentNotFound
+			return nil, service_error.ErrApartmentNotFound
 		}
-		return err
+		return nil, err
 	}
 
-	return nil
+	return dto.MapApartmentToResponse(apar), nil
 }
 
 func (s *apartmentService) Delete(ctx context.Context, id uuid.UUID) error {

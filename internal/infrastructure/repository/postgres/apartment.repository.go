@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type apartmentRepository struct {
@@ -27,21 +28,22 @@ func (r *apartmentRepository) Create(ctx context.Context, apartment *entity.Apar
 
 // /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) error {
+func (r *apartmentRepository) Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) (*entity.Apartment, error) {
 	result := r.db.WithContext(ctx).
-		Model(&entity.Apartment{}).
+		Model(apartment).
+		Clauses(clause.Returning{}).
 		Where("id = ?", id).
 		Updates(apartment)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	return apartment, nil
 }
 
 // /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////

@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type commentRepository struct {
@@ -23,23 +24,24 @@ func (r *commentRepository) Create(ctx context.Context, comment *entity.Comment)
 	return r.db.WithContext(ctx).Create(comment).Error
 }
 
-func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, comment *entity.Comment) error {
+func (r *commentRepository) Update(ctx context.Context, id uuid.UUID, comment *entity.Comment) (*entity.Comment, error) {
 	result := r.db.WithContext(ctx).
-		Model(&entity.Comment{}).
+		Model(comment).
 		Where("id = ?", id).
+		Clauses(clause.Returning{}).
 		Updates(comment)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	// حالا اینجا comment کاملاً پر شده (فیلدهای قدیمی + فیلدهای جدید)
+	return comment, nil
 }
-
 func (r *commentRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	result := r.db.WithContext(ctx).Delete(&entity.Comment{}, "id = ?", id)
 	if result.Error != nil {

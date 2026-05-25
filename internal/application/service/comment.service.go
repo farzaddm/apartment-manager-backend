@@ -15,7 +15,7 @@ import (
 type CommentService interface {
 	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error)
 
-	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) error
+	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) (*dto.CommentResponse, error)
 
 	Delete(ctx context.Context, id uuid.UUID) error
 
@@ -93,40 +93,40 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	}, nil
 }
 
-func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) error {
+func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) (*dto.CommentResponse, error) {
 	comm, err := s.commentRepo.GetByID(ctx, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if comm == nil {
-		return service_error.ErrTicketOfCommentOrCommentNotFound
+		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
 
 	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
-		return service_error.ErrUserIDNotFoundInContext
+		return nil, service_error.ErrUserIDNotFoundInContext
 	}
 	str_baseUserID := rawBaseUserID.(string)
 	baseUserID, err := uuid.Parse(str_baseUserID)
 
 	if err != nil {
-		return service_error.ErrCommonParseStrToUUID
+		return nil, service_error.ErrCommonParseStrToUUID
 	}
 
 	if comm.UserID == nil || *comm.UserID != baseUserID {
-		return service_error.ErrCommentUnauthorizedAccess
+		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 	comment := &entity.Comment{
 		Body: req.Body,
 	}
-	err = s.commentRepo.Update(ctx, id, comment)
+	comm, err = s.commentRepo.Update(ctx, id, comment)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return service_error.ErrCommentNotFound
+			return nil, service_error.ErrCommentNotFound
 		}
-		return err
+		return nil, err
 	}
-	return nil
+	return dto.MapCommentToResponse(comm), nil
 }
 
 func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
