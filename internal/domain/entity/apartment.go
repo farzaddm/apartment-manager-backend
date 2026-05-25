@@ -13,4 +13,5 @@ type Apartment struct {
 	Announcements []Announcement
 	Rules         []Rule
 	InviteCodes   []InviteCode
+	Units         []Unit
 }

@@ -11,18 +11,8 @@ type CreateTicketRequest struct {
 	Description   string                     `json:"description"`
 	Body          string                     `json:"body"  binding:"required"`
 	Category      entity.TicketCategory      `json:"category" binding:"required"`
-	Accessability entity.TicketAccessability `json:"accessability" binding:"required"`
-}
-
-type CreateTicketResponse struct {
-	ID            uuid.UUID                  `json:"id"`
-	UserID        *uuid.UUID                 `json:"user_id"`
-	Title         string                     `json:"title"`
-	Description   string                     `json:"description"`
-	Body          string                     `json:"body" `
-	Category      entity.TicketCategory      `json:"category"`
-	Accessability entity.TicketAccessability `json:"accessability"`
-	Status        entity.TicketStatus        `json:"status"`
+	Accessibility entity.TicketAccessibility `json:"accessibility" binding:"required"`
+	TagIDs        []uuid.UUID                `json:"tag_ids" binding:"omitempty"`
 }
 
 type UpdateTicketRequest struct {
@@ -37,10 +27,11 @@ type UpdateTicketStatusRequest struct {
 }
 
 type TicketFilterRequest struct {
-	UserID   *uuid.UUID             `form:"user_id"`
+	UserID   *string `form:"user_id"`
+	UserUUID *uuid.UUID
 	Status   *entity.TicketStatus   `form:"status"`
 	Category *entity.TicketCategory `form:"category"`
 
-	Page  int `form:"page"  binding:"required"`
-	Limit int `form:"limit"  binding:"required"`
+	Page  int `form:"page" binding:"required"`
+	Limit int `form:"limit" binding:"required"`
 }

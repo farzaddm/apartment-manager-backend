@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	userdto "apartment-manager-backend/internal/application/dto/user"
 	"context"
 	"errors"
 
@@ -67,7 +66,7 @@ func (r *userRepository) ExistPhone(ctx context.Context, phone string) (bool, er
 	return count > 0, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error {
+func (r *userRepository) Update(ctx context.Context, user domainRepo.UpdateProfileRequest, id string) error {
 	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Updates(user).Error
 }
 

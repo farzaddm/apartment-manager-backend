@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"apartment-manager-backend/pkg/response"
+	"apartment-manager-backend/pkg/validator"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +30,15 @@ func (c *TicketController) Create(ctx *gin.Context) {
 	var req dto.CreateTicketRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
@@ -38,10 +47,10 @@ func (c *TicketController) Create(ctx *gin.Context) {
 		Description:   req.Description,
 		Body:          req.Body,
 		Category:      req.Category,
-		Accessability: req.Accessability,
+		Accessibility: req.Accessibility,
 	}
 
-	cr_ticket, err := c.ticketService.Create(ctx, ticket)
+	data, err := c.ticketService.Create(ctx, ticket)
 	if err != nil {
 		switch err {
 
@@ -62,15 +71,6 @@ func (c *TicketController) Create(ctx *gin.Context) {
 			return
 		}
 	}
-	data := dto.CreateTicketResponse{
-		ID:          cr_ticket.ID,
-		UserID:      cr_ticket.UserID,
-		Title:       cr_ticket.Title,
-		Description: cr_ticket.Description,
-		Body:        cr_ticket.Body,
-		Category:    cr_ticket.Category,
-		Status:      cr_ticket.Status,
-	}
 	response.Success(ctx, http.StatusCreated, "ticket_created_successfully", data)
 }
 
@@ -86,7 +86,14 @@ func (c *TicketController) List(ctx *gin.Context) {
 
 	b = ctx.Query("user_id")
 	if b == "" {
-		filter.UserID = nil
+		filter.UserUUID = nil
+	} else {
+		uid, err := uuid.Parse(b)
+		if err != nil {
+			response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
+			return
+		}
+		filter.UserUUID = &uid
 	}
 	b = ctx.Query("status")
 	if b == "" {
@@ -138,11 +145,20 @@ func (c *TicketController) Update(ctx *gin.Context) {
 	var req dto.UpdateTicketRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
-	if err := c.ticketService.Update(ctx, id, req); err != nil {
+	var data *dto.TicketBaseResponse
+	if data, err = c.ticketService.Update(ctx, id, req); err != nil {
 		switch err {
 
 		case service_error.ErrTicketNotFound:
@@ -167,7 +183,7 @@ func (c *TicketController) Update(ctx *gin.Context) {
 		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_updated_successfully", data)
 }
 
 func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
@@ -182,11 +198,20 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 	var req dto.UpdateTicketStatusRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
-	if err := c.ticketService.UpdateStatus(ctx, id, req.Status); err != nil {
+	var data *dto.TicketBaseResponse
+	if data, err = c.ticketService.UpdateStatus(ctx, id, req.Status); err != nil {
 		switch err {
 		case service_error.ErrTicketNotFound:
 			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
@@ -198,7 +223,7 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 		}
 	}
 
-	response.Success(ctx, http.StatusOK, "ticket_status_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "ticket_status_updated_successfully", data)
 }
 
 func (c *TicketController) Delete(ctx *gin.Context) {
@@ -345,11 +370,19 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 
 	var req dto.CreateCommentRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
-	comm, err := c.commentService.Create(ctx, ticketID, &req)
+	data, err := c.commentService.Create(ctx, ticketID, &req)
 	if err != nil {
 		switch err {
 
@@ -379,12 +412,6 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 			return
 		}
 	}
-	data := dto.CreateCommentResponse{
-		ID:             comm.ID,
-		UserID:         comm.UserID,
-		TicketID:       comm.TicketID,
-		Body:           comm.Body,
-		CommittedOrder: comm.CommittedOrder,
-	}
+
 	response.Success(ctx, http.StatusCreated, "comment_created_successfully", data)
 }

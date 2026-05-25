@@ -56,9 +56,9 @@ const (
 	OtherAnnouncementOrder         AnnouncementOrder = "other"
 )
 
-type TicketAccessability string
+type TicketAccessibility string
 
 const (
-	PublicTicket  TicketAccessability = "public"
-	PrivateTicket TicketAccessability = "private"
+	PublicTicket  TicketAccessibility = "public"
+	PrivateTicket TicketAccessibility = "private"
 )

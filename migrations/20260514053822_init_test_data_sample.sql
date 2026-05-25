@@ -115,29 +115,105 @@ VALUES
 -- 7. Insert Announcements (6 announcements)
 INSERT INTO announcements (id, apartment_id, title, description, body, expired_date)
 VALUES 
+-- 1
 (
     '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Water Shutoff Notice', 'Scheduled maintenance work', 'Water will be turned off from 9 AM to 1 PM this Friday.', NOW() + INTERVAL '2 days'
 ),
+-- 2
 (
     '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Roof Inspection', 'Contractors on site', 'Please expect workers on the roof throughout the upcoming week.', NOW() + INTERVAL '7 days'
 ),
+-- 3
 (
     '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Summer BBQ Party', 'Community event', 'Join us on the rooftop terrace this Saturday at 5 PM for free food and drinks.', NOW() + INTERVAL '3 days'
 ),
+-- 4
 (
     '44444444-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Fire Alarm Testing', 'Routine monthly check', 'Alarms will sound intermittently between 10 AM and 12 PM.', NOW() + INTERVAL '1 day'
 ),
+-- 5
 (
     '55555555-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Elevator Modernization Update', 'West Elevator offline', 'West elevator upgrades will take an extra 3 days to complete.', NOW() + INTERVAL '4 days'
 ),
+-- 6
 (
     '66666666-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
     'Parking Lot Cleaning', 'Move your vehicles', 'Lower deck parking will be power-washed. All vehicles must be moved.', NOW() + INTERVAL '5 days'
+),
+-- 7
+(
+    '77777777-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Annual General Meeting', 'Mandatory resident meeting', 'The annual community budget and management meeting will be held in the lobby at 7 PM.', NOW() + INTERVAL '10 days'
+),
+-- 8
+(
+    '88888888-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Gym HVAC Maintenance', 'Temporary gym closure', 'The resident gym will be closed tomorrow from 8 AM to 2 PM for AC repairs.', NOW() + INTERVAL '1 day'
+),
+-- 9
+(
+    '99999999-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Package Delivery Policy', 'New locker system', 'All incoming deliveries must now be retrieved from the newly installed smart lockers in the lobby.', NOW() + INTERVAL '14 days'
+),
+-- 10
+(
+    '10101010-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Gas Leak Drill', 'Emergency preparedness', 'A surprise gas safety drill will be conducted sometime this week. Please review exit routes.', NOW() + INTERVAL '6 days'
+),
+-- 11
+(
+    '12121212-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Pool Opening Delayed', 'Chemical imbalance detected', 'The swimming pool opening is postponed until water safety levels return to normal.', NOW() + INTERVAL '3 days'
+),
+-- 12
+(
+    '13131313-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Balcony Storage Reminder', 'Clutter violation regulations', 'Please ensure no heavy furniture or excessive trash is stored on balconies for safety reasons.', NOW() + INTERVAL '12 days'
+),
+-- 13
+(
+    '14141414-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Fumigation and Pest Control', 'Building-wide spraying', 'Pest control will spray common areas. Please keep pets indoors during this time.', NOW() + INTERVAL '4 days'
+),
+-- 14
+(
+    '15151515-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'New Security Cameras', 'CCTV System Upgrade', 'High-definition cameras are being installed at all exit doors to enhance community security.', NOW() + INTERVAL '8 days'
+),
+-- 15
+(
+    '16161616-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Bicycle Storage Cleanout', 'Tag your bikes', 'Unmarked bicycles in the underground storage will be donated. Please tag your bike before Friday.', NOW() + INTERVAL '5 days'
+),
+-- 16
+(
+    '17171717-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Trash Chute Blockage', 'Maintenance alert', 'The main trash chute is blocked due to improper disposal. Please use ground dumpsters for now.', NOW() + INTERVAL '2 days'
+),
+-- 17
+(
+    '18181818-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Yoga Classes on Rooftop', 'Weekly wellness session', 'Complimentary sunset yoga classes start this Tuesday at 6:30 PM. Bring your own mat.', NOW() + INTERVAL '9 days'
+),
+-- 18
+(
+    '19191919-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Painting of Hallways', 'Fresh coat of paint', 'Expect minor disruptions and wet paint signs in the hallways of floors 1 to 5.', NOW() + INTERVAL '11 days'
+),
+-- 19
+(
+    '20202020-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Internet Outage scheduled', 'Fiber optic upgrades', 'ISP will be upgrading the main building link. Internet will be down from 2 AM to 5 AM.', NOW() + INTERVAL '2 days'
+),
+-- 20
+(
+    '21212121-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'a0000000-0000-0000-0000-000000000000',
+    'Holiday Decoration Setup', 'Volunteers needed', 'We are decorating the lobby for the upcoming holidays. Join the committee this Friday evening!', NOW() + INTERVAL '6 days'
 );
 
 -- 8. Insert Rules (6 rule categories)

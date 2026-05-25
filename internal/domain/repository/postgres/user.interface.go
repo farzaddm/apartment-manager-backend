@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"apartment-manager-backend/internal/application/dto/user"
 	"apartment-manager-backend/internal/domain/entity"
 	"context"
 )
@@ -9,7 +8,7 @@ import (
 type UserInterface interface {
 	Create(ctx context.Context, user *entity.User) error
 	GetById(ctx context.Context, id string) (*entity.User, error)
-	Update(ctx context.Context, user userdto.UpdateProfileRequest, id string) error
+	Update(ctx context.Context, user UpdateProfileRequest, id string) error
 	ChangePassword(ctx context.Context, hashedPassword string, id string) error
 	Delete(ctx context.Context, id string) error
 
@@ -19,4 +18,12 @@ type UserInterface interface {
 	GetByUsername(ctx context.Context, username string) (*entity.User, error)
 
 	UpdateProfileImage(ctx context.Context, userID string, imagePath string) error
+}
+
+type UpdateProfileRequest struct {
+	FirstName string
+	LastName  string
+	Email     string
+	Username  string
+	Gender    *entity.GenderType
 }

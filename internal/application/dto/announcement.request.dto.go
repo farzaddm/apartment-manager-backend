@@ -26,16 +26,3 @@ type UpdateAnnouncementRequest struct {
 	ExpiredDate *time.Time               `json:"expired_date"`
 	TagIDs      []uuid.UUID              `json:"tag_ids"`
 }
-
-type AnnouncementResponse struct {
-	ID          uuid.UUID                `json:"id"`
-	ApartmentID uuid.UUID                `json:"apartment_id"`
-	Title       string                   `json:"title"`
-	Description string                   `json:"description"`
-	Body        string                   `json:"body"`
-	Order       entity.AnnouncementOrder `json:"order"`
-	IsPinned    bool                     `json:"is_pinned"`
-	ExpiredDate *time.Time               `json:"expired_date,omitempty"`
-	Tags        []TagResponse            `json:"tags"`
-	CreatedAt   time.Time                `json:"created_at"`
-}

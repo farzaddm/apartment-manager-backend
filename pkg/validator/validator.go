@@ -13,6 +13,8 @@ func ParseValidationErrors(err error) []string {
 				errMsgs = append(errMsgs, vErr.Field()+": is required")
 			case "email":
 				errMsgs = append(errMsgs, vErr.Field()+": invalid email format")
+			case "uuid":
+				errMsgs = append(errMsgs, vErr.Field()+": invalid uuid format")
 			case "min":
 				errMsgs = append(errMsgs, vErr.Field()+": is too short")
 			case "max":

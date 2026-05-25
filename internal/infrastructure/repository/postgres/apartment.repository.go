@@ -1,5 +1,6 @@
 package postgres
 
+//TODO : Sort Lists!
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type apartmentRepository struct {
@@ -26,21 +28,22 @@ func (r *apartmentRepository) Create(ctx context.Context, apartment *entity.Apar
 
 // /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *apartmentRepository) Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) error {
+func (r *apartmentRepository) Update(ctx context.Context, id uuid.UUID, apartment *entity.Apartment) (*entity.Apartment, error) {
 	result := r.db.WithContext(ctx).
-		Model(&entity.Apartment{}).
+		Model(apartment).
+		Clauses(clause.Returning{}).
 		Where("id = ?", id).
 		Updates(apartment)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	return apartment, nil
 }
 
 // /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
@@ -83,6 +86,8 @@ func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entit
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
+		Preload("Units").
+		Preload("Units.User").
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -95,33 +100,35 @@ func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entit
 	return &apartment, nil
 }
 
-func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
-	var apartment entity.Apartment
+// func (r *apartmentRepository) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
+// 	var apartment entity.Apartment
 
-	query := r.db.WithContext(ctx)
+// 	query := r.db.WithContext(ctx)
 
-	for _, relation := range relations {
-		query = query.Preload(relation)
-	}
+// 	for _, relation := range relations {
+// 		query = query.Preload(relation)
+// 	}
 
-	err := query.
-		First(&apartment, "id = ?", id).
-		Error
+// 	err := query.
+// 		First(&apartment, "id = ?", id).
+// 		Error
 
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &apartment, nil
-}
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return nil, nil
+// 		}
+// 		return nil, err
+// 	}
+// 	return &apartment, nil
+// }
 
 func (r *apartmentRepository) GetWithUsers(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("Users").
+		Preload("Users", func(db *gorm.DB) *gorm.DB {
+			return db.Order("users.created_at ASC")
+		}).
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -138,7 +145,21 @@ func (r *apartmentRepository) GetWithAnnouncements(ctx context.Context, id uuid.
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("Announcements").
+		Preload("Announcements", func(db *gorm.DB) *gorm.DB {
+			return db.Order("is_pinned DESC").
+				Order(`CASE 
+                WHEN announcements.order = 'warning' THEN 1 
+                WHEN announcements.order = 'very_important' THEN 2 
+                WHEN announcements.order = 'important' THEN 3 
+                WHEN announcements.order = 'other' THEN 4 
+                ELSE 5 
+            END ASC`)
+		}).
+		Preload("Announcements.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Joins("INNER JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+														Order("tags.name ASC")
+		}).
+		Preload("Announcements.Tags.Tag").
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -155,7 +176,9 @@ func (r *apartmentRepository) GetWithRules(ctx context.Context, id uuid.UUID) (*
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("Rules").
+		Preload("Rules", func(db *gorm.DB) *gorm.DB {
+			return db.Order("rules.created_at ASC")
+		}).
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -172,7 +195,9 @@ func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UU
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("InviteCodes").
+		Preload("InviteCodes", func(db *gorm.DB) *gorm.DB {
+			return db.Order("invite_codes.expires_at ASC")
+		}).
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -191,6 +216,7 @@ func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, err
 
 	err := r.db.WithContext(ctx).
 		Find(&apartments).
+		Order("created_at DESC").
 		Error
 
 	if err != nil {
@@ -202,33 +228,36 @@ func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, err
 	return apartments, nil
 }
 
-func (r *apartmentRepository) ListWithRelations(ctx context.Context, relations ...string) ([]entity.Apartment, error) {
-	var apartments []entity.Apartment
+// func (r *apartmentRepository) ListWithRelations(ctx context.Context, relations ...string) ([]entity.Apartment, error) {
+// 	var apartments []entity.Apartment
 
-	query := r.db.WithContext(ctx)
+// 	query := r.db.WithContext(ctx)
 
-	for _, relation := range relations {
-		query = query.Preload(relation)
-	}
+// 	for _, relation := range relations {
+// 		query = query.Preload(relation)
+// 	}
 
-	err := query.
-		Find(&apartments).
-		Error
+// 	err := query.
+// 		Find(&apartments).
+// 		Error
 
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return apartments, nil
-}
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return nil, nil
+// 		}
+// 		return nil, err
+// 	}
+// 	return apartments, nil
+// }
 
 func (r *apartmentRepository) ListWithUsers(ctx context.Context) ([]entity.Apartment, error) {
 	var apartments []entity.Apartment
 
 	err := r.db.WithContext(ctx).
 		Preload("Users").
+		Preload("Users", func(db *gorm.DB) *gorm.DB {
+			return db.Order("users.created_at DESC")
+		}).
 		Find(&apartments).
 		Error
 
@@ -245,7 +274,21 @@ func (r *apartmentRepository) ListWithAnnouncements(ctx context.Context) ([]enti
 	var apartments []entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("Announcements").
+		Preload("Announcements", func(db *gorm.DB) *gorm.DB {
+			return db.Order("is_pinned DESC").
+				Order(`CASE 
+                WHEN announcements.order = 'warning' THEN 1 
+                WHEN announcements.order = 'very_important' THEN 2 
+                WHEN announcements.order = 'important' THEN 3 
+                WHEN announcements.order = 'other' THEN 4 
+                ELSE 5 
+            END ASC`)
+		}).
+		Preload("Announcements.Tags", func(db *gorm.DB) *gorm.DB {
+			return db.Joins("INNER JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+														Order("tags.name ASC")
+		}).
+		Preload("Announcements.Tags.Tag").
 		Find(&apartments).
 		Error
 
@@ -262,7 +305,9 @@ func (r *apartmentRepository) ListWithRules(ctx context.Context) ([]entity.Apart
 	var apartments []entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("Rules").
+		Preload("Rules", func(db *gorm.DB) *gorm.DB {
+			return db.Order("rules.created_at ASC")
+		}).
 		Find(&apartments).
 		Error
 
@@ -279,7 +324,9 @@ func (r *apartmentRepository) ListWithInviteCodes(ctx context.Context) ([]entity
 	var apartments []entity.Apartment
 
 	err := r.db.WithContext(ctx).
-		Preload("InviteCodes").
+		Preload("InviteCodes", func(db *gorm.DB) *gorm.DB {
+			return db.Order("invite_codes.expires_at ASC")
+		}).
 		Find(&apartments).
 		Error
 

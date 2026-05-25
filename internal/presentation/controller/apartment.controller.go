@@ -5,6 +5,7 @@ import (
 	"apartment-manager-backend/internal/application/service"
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/pkg/response"
+	"apartment-manager-backend/pkg/validator"
 	"errors"
 	"net/http"
 
@@ -26,7 +27,15 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 	var req dto.CreateApartmentRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
@@ -38,19 +47,12 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	cr_apartment, err := c.apartmentService.Create(ctx, apartment)
+	data, err := c.apartmentService.Create(ctx, apartment)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_apartment", err)
 		return
 	}
-	data := dto.CreateApartmentResponse{
-		ID:         cr_apartment.ID,
-		Name:       cr_apartment.Name,
-		Province:   cr_apartment.Province,
-		City:       cr_apartment.City,
-		Address:    cr_apartment.Address,
-		PostalCode: cr_apartment.PostalCode,
-	}
+
 	response.Success(ctx, http.StatusCreated, "apartment_created_successfully", data)
 }
 
@@ -66,7 +68,15 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 	var req dto.UpdateApartmentRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		response.Error(ctx, http.StatusBadRequest, "invalid_request_body", err)
+		errList := validator.ParseValidationErrors(err)
+
+		res := &response.StandardResponse{
+			Success:    false,
+			StatusCode: http.StatusBadRequest,
+			Message:    "invalid_request_body",
+			Errors:     errList,
+		}
+		res.SendResponse(ctx)
 		return
 	}
 
@@ -78,7 +88,8 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		PostalCode: req.PostalCode,
 	}
 
-	if err := c.apartmentService.Update(ctx, id, apartment); err != nil {
+	var data *dto.ApartmentResponse
+	if data, err = c.apartmentService.Update(ctx, id, apartment); err != nil {
 		if errors.Is(err, service_error.ErrApartmentNotFound) {
 			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
 			return
@@ -87,7 +98,7 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		return
 	}
 
-	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", nil)
+	response.Success(ctx, http.StatusOK, "apartment_updated_successfully", data)
 }
 
 func (c *ApartmentController) Delete(ctx *gin.Context) {

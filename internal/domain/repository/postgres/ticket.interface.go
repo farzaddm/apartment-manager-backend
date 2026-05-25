@@ -18,9 +18,9 @@ type TicketInterface interface {
 
 	List(ctx context.Context, filter TicketFilter, me uuid.UUID, role entity.UserRole) ([]TicketWithCommentCount, error)
 
-	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error
-	UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) error
-	UpdateContent(ctx context.Context, id uuid.UUID, title, description, body string) error
+	UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) (*entity.Ticket, error)
+	UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) (*entity.Ticket, error)
+	UpdateContent(ctx context.Context, id uuid.UUID, title, description, body string) (*entity.Ticket, error)
 
 	GetTicketsByUserId(ctx context.Context, userID string) ([]entity.Ticket, error)
 }

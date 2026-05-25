@@ -127,7 +127,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"voldemort_man\",\n    \"password\": \"123456\"\n}",
+					"raw": "{\n    \"username\": \"voldemort_ad\",\n    \"password\": \"123456\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"

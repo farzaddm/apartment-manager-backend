@@ -17,7 +17,7 @@ type CommentInterface interface {
 
 	ListByTicketID(ctx context.Context, ticketID uuid.UUID) ([]entity.Comment, error)
 
-	Update(ctx context.Context, id uuid.UUID, comment *entity.Comment) error
+	Update(ctx context.Context, id uuid.UUID, comment *entity.Comment) (*entity.Comment, error)
 
 	Delete(ctx context.Context, id uuid.UUID) error
 

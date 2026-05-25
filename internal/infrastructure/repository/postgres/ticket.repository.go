@@ -1,5 +1,6 @@
 package postgres
 
+//TODO : Sort Res !!!
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ticketRepository struct {
@@ -47,7 +49,12 @@ func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.T
 	var ticket entity.Ticket
 
 	err := r.db.WithContext(ctx).
-		Preload("Tags").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+				Order("tags.name ASC")
+		}).
+		Preload("Tags.Tag").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -66,9 +73,16 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 
 	err := r.db.WithContext(ctx).
 		Preload("User").
-		Preload("Comments").
+		Preload("Comments", func(db *gorm.DB) *gorm.DB {
+			return db.Order("comments.committed_order ASC")
+		}).
 		Preload("Comments.User").
-		Preload("Tags").
+		Preload("Tags", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN tags ON tags.id = ticket_announcement_tags.tag_id"). //TODO : I'm not Sure Work Well or Not
+				Order("tags.name ASC")
+		}).
+		Preload("Tags.Tag").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -92,11 +106,12 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		Model(&entity.Ticket{}).
 		Select("tickets.*, COUNT(comments.id) as comment_count").
 		Joins("LEFT JOIN comments ON comments.ticket_id = tickets.id").
+		Order("tickets.created_at ASC").
 		Group("tickets.id")
 
 	if !(role == entity.RoleAdmin || role == entity.RoleManager) {
 		query = query.Where(
-			r.db.Where("tickets.accessability = ?", "public").
+			r.db.Where("tickets.accessibility = ?", "public").
 				Or("tickets.user_id = ?", me),
 		)
 	}
@@ -135,44 +150,53 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 
 // /////////////////// Update / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
-func (r *ticketRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) error {
+func (r *ticketRepository) UpdateStatus(ctx context.Context, id uuid.UUID, status entity.TicketStatus) (*entity.Ticket, error) {
+	var ticket entity.Ticket
+
 	result := r.db.WithContext(ctx).
-		Model(&entity.Ticket{}).
+		Model(&ticket).
 		Where("id = ?", id).
+		Clauses(clause.Returning{}).
 		Update("status", status)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	return &ticket, nil
 }
 
-func (r *ticketRepository) UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) error {
+func (r *ticketRepository) UpdateCategory(ctx context.Context, id uuid.UUID, category entity.TicketCategory) (*entity.Ticket, error) {
+	var ticket entity.Ticket
+
 	result := r.db.WithContext(ctx).
-		Model(&entity.Ticket{}).
+		Model(&ticket).
 		Where("id = ?", id).
+		Clauses(clause.Returning{}).
 		Update("category", category)
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	return &ticket, nil
 }
 
-func (r *ticketRepository) UpdateContent(ctx context.Context, id uuid.UUID, title, description, body string) error {
+func (r *ticketRepository) UpdateContent(ctx context.Context, id uuid.UUID, title, description, body string) (*entity.Ticket, error) {
+	var ticket entity.Ticket
+
 	result := r.db.WithContext(ctx).
-		Model(&entity.Ticket{}).
+		Model(&ticket).
 		Where("id = ?", id).
+		Clauses(clause.Returning{}).
 		Updates(map[string]interface{}{
 			"title":       title,
 			"description": description,
@@ -180,14 +204,14 @@ func (r *ticketRepository) UpdateContent(ctx context.Context, id uuid.UUID, titl
 		})
 
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
 
 	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+		return nil, gorm.ErrRecordNotFound
 	}
 
-	return nil
+	return &ticket, nil
 }
 
 func (r *ticketRepository) GetTicketsByUserId(ctx context.Context, userID string) ([]entity.Ticket, error) {
