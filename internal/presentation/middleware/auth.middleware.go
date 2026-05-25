@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"apartment-manager-backend/internal/constant"
 	"apartment-manager-backend/internal/domain/jwt"
 	"apartment-manager-backend/pkg/response"
 	"net/http"
@@ -41,8 +42,8 @@ func AuthMiddleware(tokenService jwt.TokenServiceInterface) gin.HandlerFunc {
 		}
 
 		//TODO : declare const variable name instead of these static values
-		c.Set("user_id", claims.UserID.String())
-		c.Set("role", claims.Role)
+		c.Set(constant.UserIDKeyToken, claims.UserID.String())
+		c.Set(constant.RoleKeyToken, claims.Role)
 
 		c.Next()
 	}

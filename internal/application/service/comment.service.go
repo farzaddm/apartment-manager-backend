@@ -3,6 +3,7 @@ package service
 import (
 	"apartment-manager-backend/internal/application/dto"
 	service_error "apartment-manager-backend/internal/application/service/error"
+	"apartment-manager-backend/internal/constant"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"context"
@@ -42,7 +43,7 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -102,7 +103,7 @@ func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.Upda
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -138,7 +139,7 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 		return service_error.ErrCommentNotFound
 	}
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
@@ -178,7 +179,7 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Commen
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -221,7 +222,7 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uu
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}

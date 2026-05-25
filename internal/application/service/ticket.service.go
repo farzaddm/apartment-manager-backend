@@ -3,6 +3,7 @@ package service
 import (
 	"apartment-manager-backend/internal/application/dto"
 	service_error "apartment-manager-backend/internal/application/service/error"
+	"apartment-manager-backend/internal/constant"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"errors"
@@ -39,7 +40,7 @@ func NewTicketService(repo domainRepo.TicketInterface) TicketService {
 }
 
 func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*dto.CreateTicketResponse, error) {
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -75,7 +76,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return service_error.ErrUserIDNotFoundInContext
 	}
@@ -124,7 +125,7 @@ func (s *ticketService) GetByID(ctx context.Context, id uuid.UUID) (*dto.TicketB
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -173,7 +174,7 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -206,7 +207,7 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 // TODO : This list it's not fully
 func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest) ([]dto.TicketBaseResponseWithCommentCount, error) {
 
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
@@ -241,7 +242,7 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 }
 
 func (s *ticketService) Update(ctx context.Context, id uuid.UUID, req dto.UpdateTicketRequest) (*dto.TicketBaseResponse, error) {
-	rawBaseUserID := ctx.Value("user_id") // IT MUST BE EXIST!
+	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
 		return nil, service_error.ErrUserIDNotFoundInContext
 	}
