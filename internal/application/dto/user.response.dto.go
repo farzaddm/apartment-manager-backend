@@ -2,6 +2,8 @@ package dto
 
 import (
 	"apartment-manager-backend/internal/domain/entity"
+
+	"github.com/google/uuid"
 )
 
 type UserProfileResponse struct {
@@ -15,6 +17,7 @@ type UserProfileResponse struct {
 }
 
 type UserResponse struct {
+	ID        uuid.UUID          `json:"user_id"`
 	FirstName string             `json:"first_name"`
 	LastName  string             `json:"last_name"`
 	Email     string             `json:"email"`
@@ -36,6 +39,7 @@ func MapUserToUserResponse(u *entity.User) *UserResponse {
 		return nil
 	}
 	return &UserResponse{
+		ID:        u.ID,
 		FirstName: u.FirstName,
 		LastName:  u.LastName,
 		Email:     u.Email,

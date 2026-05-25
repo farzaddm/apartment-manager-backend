@@ -3,6 +3,7 @@ package dto
 import (
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -26,6 +27,7 @@ type CreateTicketResponse struct {
 	Body        string     `json:"body"`
 	Category    string     `json:"category"`
 	Status      string     `json:"status"`
+	CreatedAt   time.Time  `json:"created_at"`
 }
 
 // // TODO : Coupling TicketResponse!!!!!! Remove one of them!!!!!
@@ -38,6 +40,7 @@ type TicketBaseResponse struct {
 	Category    string        `json:"category"`
 	Status      string        `json:"status"`
 	Tags        []TagResponse `json:"tags"`
+	CreatedAt   time.Time     `json:"created_at"`
 }
 
 type TicketBaseResponseWithComments struct {
@@ -80,6 +83,7 @@ func MapTicketToBaseResponse(ticket *entity.Ticket) *TicketBaseResponse {
 		Body:        ticket.Body,
 		Category:    string(ticket.Category),
 		Status:      string(ticket.Status),
+		CreatedAt:   ticket.CreatedAt,
 		Tags:        tags, //TODO : Fix Ticket-Tags Relation
 	}
 }

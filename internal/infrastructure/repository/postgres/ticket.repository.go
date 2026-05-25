@@ -106,7 +106,7 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		Model(&entity.Ticket{}).
 		Select("tickets.*, COUNT(comments.id) as comment_count").
 		Joins("LEFT JOIN comments ON comments.ticket_id = tickets.id").
-		Order("tickets.create_at ASC").
+		Order("tickets.created_at ASC").
 		Group("tickets.id")
 
 	if !(role == entity.RoleAdmin || role == entity.RoleManager) {

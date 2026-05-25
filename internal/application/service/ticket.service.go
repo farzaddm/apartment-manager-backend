@@ -72,6 +72,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Body:        ticket.Body,
 		Category:    string(ticket.Category),
 		Status:      string(ticket.Status),
+		CreatedAt:   ticket.CreatedAt,
 	}, err
 }
 
@@ -226,7 +227,7 @@ func (s *ticketService) List(ctx context.Context, filter dto.TicketFilterRequest
 	role := entity.UserRole(str_role)
 
 	new_filter := domainRepo.TicketFilter{
-		UserID:   filter.UserID,
+		UserID:   filter.UserUUID,
 		Status:   filter.Status,
 		Category: filter.Category,
 		Limit:    filter.Limit,

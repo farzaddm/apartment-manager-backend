@@ -25,7 +25,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 
 	//TODO : Comment This is Release Mode
 	r.Use(gin.Logger())
-	// r.Use(gin.Recovery())
+	r.Use(gin.Recovery())
 
 	// CORS
 	// r.Use(cors.Default())

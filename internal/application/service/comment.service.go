@@ -91,6 +91,7 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		TicketID:       comment.TicketID,
 		Body:           comment.Body,
 		CommittedOrder: comment.CommittedOrder,
+		CreatedAt:      comment.CreatedAt,
 	}, nil
 }
 

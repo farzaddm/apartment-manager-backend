@@ -2,6 +2,7 @@ package dto
 
 import (
 	"apartment-manager-backend/internal/domain/entity"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -12,6 +13,7 @@ type CreateCommentResponse struct {
 	TicketID       uuid.UUID  `json:"ticket_id"`
 	Body           string     `json:"body"`
 	CommittedOrder int        `json:"committed_order"`
+	CreatedAt      time.Time  `json:"created_at"`
 }
 type CommentResponse struct {
 	ID             uuid.UUID  `json:"id"`
@@ -19,6 +21,7 @@ type CommentResponse struct {
 	TicketID       uuid.UUID  `json:"ticket_id"`
 	Body           string     `json:"body"`
 	CommittedOrder int        `json:"committed_order"`
+	CreatedAt      time.Time  `json:"created_at"`
 }
 
 type CommentResponseWithUser struct {

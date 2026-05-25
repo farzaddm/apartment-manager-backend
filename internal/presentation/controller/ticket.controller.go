@@ -86,7 +86,14 @@ func (c *TicketController) List(ctx *gin.Context) {
 
 	b = ctx.Query("user_id")
 	if b == "" {
-		filter.UserID = nil
+		filter.UserUUID = nil
+	} else {
+		uid, err := uuid.Parse(b)
+		if err != nil {
+			response.Error(ctx, http.StatusBadRequest, "invalid_ticket_id", err)
+			return
+		}
+		filter.UserUUID = &uid
 	}
 	b = ctx.Query("status")
 	if b == "" {

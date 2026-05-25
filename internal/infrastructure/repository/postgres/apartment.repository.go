@@ -86,6 +86,8 @@ func (r *apartmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*entit
 	var apartment entity.Apartment
 
 	err := r.db.WithContext(ctx).
+		Preload("Units").
+		Preload("Units.User").
 		First(&apartment, "id = ?", id).
 		Error
 
@@ -194,7 +196,7 @@ func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UU
 
 	err := r.db.WithContext(ctx).
 		Preload("InviteCodes", func(db *gorm.DB) *gorm.DB {
-			return db.Order("invite_codes.expire_at ASC")
+			return db.Order("invite_codes.expires_at ASC")
 		}).
 		First(&apartment, "id = ?", id).
 		Error
@@ -214,7 +216,7 @@ func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, err
 
 	err := r.db.WithContext(ctx).
 		Find(&apartments).
-		Order("create_at DESC").
+		Order("created_at DESC").
 		Error
 
 	if err != nil {
@@ -323,7 +325,7 @@ func (r *apartmentRepository) ListWithInviteCodes(ctx context.Context) ([]entity
 
 	err := r.db.WithContext(ctx).
 		Preload("InviteCodes", func(db *gorm.DB) *gorm.DB {
-			return db.Order("invite_codes.expire_at ASC")
+			return db.Order("invite_codes.expires_at ASC")
 		}).
 		Find(&apartments).
 		Error

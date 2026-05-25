@@ -12,6 +12,7 @@ type CreateTicketRequest struct {
 	Body          string                     `json:"body"  binding:"required"`
 	Category      entity.TicketCategory      `json:"category" binding:"required"`
 	Accessibility entity.TicketAccessibility `json:"accessibility" binding:"required"`
+	// TagNames      []string                   `json:"tag_names" binding:"omitempty"` //TODO : Farzad!!!
 }
 
 type UpdateTicketRequest struct {
@@ -26,10 +27,11 @@ type UpdateTicketStatusRequest struct {
 }
 
 type TicketFilterRequest struct {
-	UserID   *uuid.UUID             `form:"user_id"`
+	UserID   *string `form:"user_id"`
+	UserUUID *uuid.UUID
 	Status   *entity.TicketStatus   `form:"status"`
 	Category *entity.TicketCategory `form:"category"`
 
-	Page  int `form:"page"  binding:"required"`
-	Limit int `form:"limit"  binding:"required"`
+	Page  int `form:"page" binding:"required"`
+	Limit int `form:"limit" binding:"required"`
 }

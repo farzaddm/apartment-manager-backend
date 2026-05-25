@@ -18,7 +18,7 @@ type ApartmentService interface {
 	Delete(ctx context.Context, id uuid.UUID) error
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
 
-	GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponse, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error)
 	// GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
 
 	GetWithUsers(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error)
@@ -54,13 +54,13 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 	}
 	err := s.apartmentRepo.Create(ctx, apartment)
 	return &dto.CreateApartmentResponse{
-		ID:           apartment.ID,
-		Name:         apartment.Name,
-		Province:     apartment.Province,
-		City:         apartment.Province,
-		Address:      apartment.Address,
-		PostalCode:   apartment.PostalCode,
-		CreationDate: apartment.CreatedAt.Format("2006-01-02"),
+		ID:         apartment.ID,
+		Name:       apartment.Name,
+		Province:   apartment.Province,
+		City:       apartment.Province,
+		Address:    apartment.Address,
+		PostalCode: apartment.PostalCode,
+		CreatedAt:  apartment.CreatedAt,
 	}, err
 }
 
@@ -103,7 +103,7 @@ func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, erro
 	return *exists, nil
 }
 
-func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponse, error) {
+func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error) {
 	apartment, err := s.apartmentRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,10 @@ func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Apar
 		return nil, service_error.ErrApartmentNotFound
 	}
 
-	return dto.MapApartmentToResponse(apartment), nil
+	return &dto.ApartmentResponseWithUsersOfUnits{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		Units:             dto.MapUnitToSliceResponse(apartment.Units),
+	}, nil
 }
 
 // func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
