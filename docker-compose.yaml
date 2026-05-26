@@ -1,66 +1,45 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:${POSTGRES_VERSION}
-    container_name: ${POSTGRES_CONTAINER}
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - "${POSTGRES_HOST_PORT}:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  postgres_db:
+    image: postgres:alpine
+    container_name: apt_postgres_db
+    # ... your environment and healthcheck configs ...
     networks:
-      - backend
+      - apt_network
 
   redis:
-    image: redis:${REDIS_VERSION}
-    container_name: ${REDIS_CONTAINER}
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      - redis_data:/data
+    image: redis:alpine
+    container_name: apt_redis_cache
     networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - apt_network
 
-  pgadmin:
-    image: dpage/pgadmin4:${PGADMIN_VERSION}
-    container_name: ${PGADMIN_CONTAINER}
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-    ports:
-      - "${PGADMIN_PORT}:80"
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
+    container_name: apt_migration
+    # ... your volumes and env_file configs ...
+    networks:
+      - apt_network
     depends_on:
-      postgres:
+      postgres_db:
         condition: service_healthy
-    networks:
-      - backend
 
-volumes:
-  pg_data:
-  redis_data:
-
-networks:
   backend:
+    # This is your Gin/Go backend service
+    image: ghcr.io/matinhab05/apartment-manager-backend/apt_backend:latest
+    container_name: apt_backend
+    # ... your ports, env_file, etc ...
+    networks:
+      - apt_network # <-- FIX: Add this line here!
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+
+# Crucial: Define the network down here exactly like this
+networks:
+  apt_network:
     driver: bridge

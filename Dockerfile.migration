@@ -1,0 +1,11 @@
+FROM alpine:latest
+RUN apk add --no-cache curl
+
+# Download Goose binary
+RUN curl -fsSL -o /usr/local/bin/goose https://github.com/pressly/goose/releases/download/v3.20.0/goose_linux_x86_64 && \
+    chmod +x /usr/local/bin/goose
+
+WORKDIR /migrations
+
+# We wrap the execution in 'sh -c' so it forces environment variable evaluation safely
+ENTRYPOINT ["sh", "-c", "goose postgres \"host=postgres_db port=5432 user=$DB_USER password=$DB_PASSWORD dbname=$DB_NAME sslmode=disable\" up"]
