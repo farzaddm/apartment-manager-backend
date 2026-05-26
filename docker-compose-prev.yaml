@@ -6,7 +6,7 @@ services:
     container_name: ${POSTGRES_CONTAINER}
     restart: unless-stopped
     env_file:
-      - .env
+      - prev.env
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -45,7 +45,7 @@ services:
     container_name: ${PGADMIN_CONTAINER}
     restart: unless-stopped
     env_file:
-      - .env
+      - prev.env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
