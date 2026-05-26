@@ -56,7 +56,7 @@ services:
       - apt_network
 
   backend:
-    image: ghcr.io/matinhab05/apartment-manager-backend/apt_backend:latest
+    image: ${BACK_END_IMAGE}:latest
     container_name: apt_backend
     restart: unless-stopped
     env_file:

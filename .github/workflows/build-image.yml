@@ -2,7 +2,7 @@ name: Build and Release Docker Image
 
 on:
   push:
-    branches: ["feature/github-action"] # Triggers automatically every time you push to main
+    branches: ["release"] # Triggers automatically every time you push to main  # TODO rename it to release
 
 permissions:
   contents: read
