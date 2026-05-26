@@ -1,11 +1,10 @@
 package postgres
 
 import (
-	"context"
-	"errors"
-
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
+	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -81,17 +80,24 @@ func (r *userRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Delete(&entity.User{}).Error
 }
 
-func (r *userRepository) GetById(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepository) GetById(ctx context.Context, id string) (*entity.User, string, error) {
 	var user entity.User
 	err := r.db.WithContext(ctx).First(&user, "id = ?", id).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
+		return nil, "", err
 	}
 
-	return &user, nil
+	var unit entity.Unit
+	unitNumber := ""
+
+	err = r.db.WithContext(ctx).Where("user_id = ?", user.ID).First(&unit).Error
+	if err == nil {
+		unitNumber = unit.UnitNumber
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, "", err
+	}
+
+	return &user, unitNumber, nil
 }
 
 func (r *userRepository) UpdateProfileImage(ctx context.Context, userId string, imagePath string) error {

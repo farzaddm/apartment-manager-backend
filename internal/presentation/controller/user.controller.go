@@ -143,5 +143,7 @@ func (u *UserController) SetProfileImage(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, http.StatusOK, "profile_updated_successfully", nil)
+	image_addr := &dto.UploadImageResponse{ProfileImageURL: &filePath}
+
+	response.Success(c, http.StatusOK, "profile_updated_successfully", image_addr)
 }

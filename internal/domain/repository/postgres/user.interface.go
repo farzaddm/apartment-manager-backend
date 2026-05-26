@@ -7,7 +7,7 @@ import (
 
 type UserInterface interface {
 	Create(ctx context.Context, user *entity.User) error
-	GetById(ctx context.Context, id string) (*entity.User, error)
+	GetById(ctx context.Context, id string) (*entity.User, string, error)
 	Update(ctx context.Context, user UpdateProfileRequest, id string) error
 	ChangePassword(ctx context.Context, hashedPassword string, id string) error
 	Delete(ctx context.Context, id string) error
