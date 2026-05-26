@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:${POSTGRES_VERSION}
@@ -19,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - apt_network
+      - backend
 
   redis:
     image: redis:${REDIS_VERSION}
@@ -30,48 +32,13 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - backend
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - apt_network
-
-  migration:
-    image: ghcr.io/kukymbr/goose-docker:latest
-    container_name: apt_migration
-    env_file:
-      - .env
-    volumes:
-      - ./migrations:/migrations
-    environment:
-      - GOOSE_DRIVER=postgres
-      - GOOSE_DBSTRING=postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=$DB_SSLMODE
-      - GOOSE_COMMAND=up
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - apt_network
-
-  backend:
-    image: ${BACK_END_IMAGE}:latest
-    container_name: apt_backend
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "${APP_PORT}:${APP_PORT}"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      migration:
-        condition: service_completed_successfully
-    networks:
-      - apt_network
 
   pgadmin:
     image: dpage/pgadmin4:${PGADMIN_VERSION}
@@ -88,12 +55,12 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - apt_network
+      - backend
 
 volumes:
   pg_data:
   redis_data:
 
 networks:
-  apt_network:
+  backend:
     driver: bridge
