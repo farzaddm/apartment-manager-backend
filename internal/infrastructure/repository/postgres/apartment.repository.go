@@ -129,6 +129,7 @@ func (r *apartmentRepository) GetWithUsers(ctx context.Context, id uuid.UUID) (*
 		Preload("Users", func(db *gorm.DB) *gorm.DB {
 			return db.Order("users.created_at ASC")
 		}).
+		Preload("Users.Unit").
 		First(&apartment, "id = ?", id).
 		Error
 

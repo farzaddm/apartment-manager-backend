@@ -42,15 +42,7 @@ func (c *TicketController) Create(ctx *gin.Context) {
 		return
 	}
 
-	ticket := &dto.CreateTicketRequest{
-		Title:         req.Title,
-		Description:   req.Description,
-		Body:          req.Body,
-		Category:      req.Category,
-		Accessibility: req.Accessibility,
-	}
-
-	data, err := c.ticketService.Create(ctx, ticket)
+	data, err := c.ticketService.Create(ctx, &req)
 	if err != nil {
 		switch err {
 

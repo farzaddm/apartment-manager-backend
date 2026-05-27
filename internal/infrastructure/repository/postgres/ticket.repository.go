@@ -26,6 +26,10 @@ func (r *ticketRepository) Create(ctx context.Context, ticket *entity.Ticket) er
 	return r.db.WithContext(ctx).Create(ticket).Error
 }
 
+func (r *ticketRepository) CreateTags(ctx context.Context, ticket *entity.Ticket) error {
+	return r.db.WithContext(ctx).Model(ticket).Association("Tags").Replace(ticket.Tags)
+}
+
 // /////////////////// Delete / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 
 func (r *ticketRepository) Delete(ctx context.Context, id uuid.UUID) error {

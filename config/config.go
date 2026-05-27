@@ -44,7 +44,7 @@ type JWTConfig struct {
 
 func Load() (*Config, error) {
 
-	viper.SetConfigName(".env")
+	viper.SetConfigName("prev.env") // WARNING !!!!
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("../")
