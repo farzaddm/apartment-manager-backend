@@ -22,7 +22,7 @@ func NewUserService(userRepo postgres.UserInterface, hasher *hasher.BcryptHasher
 func (s *UserService) Update(ctx context.Context, user dto.UpdateProfileRequest, id string) error {
 	d_user := domainRepo.UpdateProfileRequest{
 		FirstName: user.FirstName,
-		LastName:  user.Username,
+		LastName:  user.LastName,
 		Email:     user.Email,
 		Username:  user.Username,
 		Gender:    user.Gender,

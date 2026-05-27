@@ -40,7 +40,15 @@ func (u *UserController) Update(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, http.StatusOK, "profile_updated_successfully", nil)
+	res := dto.UpdateProfileResponse{
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Username:  req.Username,
+		Email:     req.Email,
+		Gender:    req.Gender,
+	}
+
+	response.Success(c, http.StatusOK, "profile_updated_successfully", res)
 }
 
 func (u *UserController) ChangePassword(c *gin.Context) {

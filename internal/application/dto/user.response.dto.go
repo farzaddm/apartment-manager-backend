@@ -22,6 +22,14 @@ type UserProfileResponse struct {
 	ProfileImageURL *string    `json:"profile_image_url"`
 }
 
+type UpdateProfileResponse struct {
+	FirstName string             `json:"first_name"`
+	LastName  string             `json:"last_name"`
+	Email     string             `json:"email"`
+	Username  string             `json:"username"`
+	Gender    *entity.GenderType `json:"gender,omitempty"`
+}
+
 type UploadImageResponse struct {
 	ProfileImageURL *string `json:"profile_image_url"`
 }
