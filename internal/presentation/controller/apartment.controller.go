@@ -33,21 +33,13 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
 	}
 
-	apartment := &dto.CreateApartmentRequest{
-		Name:       req.Name,
-		Province:   req.Province,
-		City:       req.City,
-		Address:    req.Address,
-		PostalCode: req.PostalCode,
-	}
-
-	data, err := c.apartmentService.Create(ctx, apartment)
+	data, err := c.apartmentService.Create(ctx, &req)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_apartment", err)
 		return
@@ -74,22 +66,14 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
 	}
 
-	apartment := &dto.UpdateApartmentRequest{
-		Name:       req.Name,
-		Province:   req.Province,
-		City:       req.City,
-		Address:    req.Address,
-		PostalCode: req.PostalCode,
-	}
-
 	var data *dto.ApartmentResponse
-	if data, err = c.apartmentService.Update(ctx, id, apartment); err != nil {
+	if data, err = c.apartmentService.Update(ctx, id, &req); err != nil {
 		if errors.Is(err, service_error.ErrApartmentNotFound) {
 			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
 			return

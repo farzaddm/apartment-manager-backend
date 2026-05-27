@@ -77,7 +77,7 @@ func (h *CommentController) UpdateBody(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return

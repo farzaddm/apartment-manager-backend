@@ -51,8 +51,12 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 		City:       req.City,
 		Address:    req.Address,
 		PostalCode: req.PostalCode,
+		Units:      dto.MapCreateUnitsToEntities(req.Units),
 	}
 	err := s.apartmentRepo.Create(ctx, apartment)
+	if err != nil {
+		return nil, err
+	}
 	return &dto.CreateApartmentResponse{
 		ID:         apartment.ID,
 		Name:       apartment.Name,
@@ -61,7 +65,8 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 		Address:    apartment.Address,
 		PostalCode: apartment.PostalCode,
 		CreatedAt:  apartment.CreatedAt,
-	}, err
+		Units:      dto.MapUnitToSliceResponse(apartment.Units),
+	}, nil
 }
 
 func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error) {

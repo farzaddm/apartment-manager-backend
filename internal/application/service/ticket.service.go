@@ -104,7 +104,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Status:      string(ticket.Status),
 		CreatedAt:   ticket.CreatedAt,
 		Tags:        dto.MapTagsToSliceResponse(tags),
-	}, err
+	}, nil
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {

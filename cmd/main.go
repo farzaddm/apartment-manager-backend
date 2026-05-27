@@ -92,6 +92,7 @@ func main() {
 	commentService := service.NewCommentService(commentRepo, ticketRepo)
 	ruleService := service.NewRuleService(ruleRepo)
 	pollService := service.NewPollService(pollRepo)
+	unitService := service.NewUnitService(unitRepo,userRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
@@ -104,6 +105,7 @@ func main() {
 	commentController := controller.NewCommentController(commentService)
 	ruleController := controller.NewRuleController(ruleService)
 	pollController := controller.NewPollController(pollService)
+	unitController := controller.NewUnitController(unitService)
 
 	// --- ROUTE ---
 	controllers := &routes.Controllers{
@@ -117,6 +119,7 @@ func main() {
 		Comment:      commentController,
 		Rule:         ruleController,
 		Poll:         pollController,
+		Unit:         unitController,
 	}
 
 	r := routes.SetUpRouter(controllers, jwtRepo)

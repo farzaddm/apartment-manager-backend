@@ -35,7 +35,7 @@ type UserResponse struct {
 	Gender    *entity.GenderType `json:"gender"`
 	Role      entity.UserRole    `json:"role"`
 	Phone     string             `json:"phone"`
-	Unit      *UnitResponse      `json:"unit"`
+	Unit      *UnitResponse      `json:"unit,omitempty"`
 }
 
 type UserResponseWithAllRelations struct {
@@ -49,6 +49,7 @@ func MapUserToUserResponse(u *entity.User) *UserResponse {
 	if u == nil {
 		return nil
 	}
+
 	return &UserResponse{
 		ID:        u.ID,
 		FirstName: u.FirstName,

@@ -7,6 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateUnitResponse struct {
+	ID          uuid.UUID  `json:"id"`
+	ApartmentID uuid.UUID  `json:"apartment_id"`
+	UserID      *uuid.UUID `json:"user_id,omitempty"`
+	UnitNumber  string     `json:"unit_number"`
+	Floor       int        `json:"floor"`
+	CreatedAt   time.Time  `json:"created_at"`
+}
+
 type UnitResponse struct {
 	ID          uuid.UUID  `json:"id"`
 	ApartmentID uuid.UUID  `json:"apartment_id"`

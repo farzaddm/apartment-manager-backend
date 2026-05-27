@@ -8,13 +8,14 @@ import (
 )
 
 type CreateApartmentResponse struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	Province   string    `json:"province"`
-	City       string    `json:"city"`
-	Address    string    `json:"address"`
-	PostalCode string    `json:"postal_code"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID         uuid.UUID      `json:"id"`
+	Name       string         `json:"name"`
+	Province   string         `json:"province"`
+	City       string         `json:"city"`
+	Address    string         `json:"address"`
+	PostalCode string         `json:"postal_code"`
+	CreatedAt  time.Time      `json:"created_at"`
+	Units      []UnitResponse `json:"units"`
 }
 
 type ApartmentResponse struct {
