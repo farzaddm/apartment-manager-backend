@@ -1,6 +1,10 @@
 package dto
 
-import "apartment-manager-backend/internal/domain/entity"
+import (
+	"apartment-manager-backend/internal/domain/entity"
+
+	"github.com/google/uuid"
+)
 
 type UpdateProfileRequest struct {
 	FirstName string             `json:"first_name" binding:"required"`
@@ -12,4 +16,8 @@ type UpdateProfileRequest struct {
 
 type ChangePasswordRequest struct {
 	Password string `json:"password" binding:"required"`
+}
+
+type PushUserToUnitRequest struct {
+	UserID uuid.UUID `json:"user_id" binding:"required"`
 }

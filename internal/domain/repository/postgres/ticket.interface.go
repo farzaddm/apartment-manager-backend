@@ -9,6 +9,7 @@ import (
 
 type TicketInterface interface {
 	Create(ctx context.Context, ticket *entity.Ticket) error
+	CreateTags(ctx context.Context, ticket *entity.Ticket) error
 
 	Delete(ctx context.Context, id uuid.UUID) error
 

@@ -85,6 +85,9 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		UserID:         &baseUserID,
 	}
 	err = s.commentRepo.Create(ctx, comment)
+	if err != nil {
+		return nil, err
+	}
 	return &dto.CreateCommentResponse{
 		ID:             comment.ID,
 		UserID:         comment.UserID,

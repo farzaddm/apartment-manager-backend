@@ -40,7 +40,6 @@ func NewTicketService(repo domainRepo.TicketInterface, tagRepo domainRepo.TagInt
 	return &ticketService{repo: repo, tagRepo: tagRepo}
 }
 
-// TODO : How Ticket Can Create Record on Ticket_Ann_Tag Table ?! {Farzard}
 func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest) (*dto.CreateTicketResponse, error) {
 	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
 	if rawBaseUserID == nil {
@@ -56,6 +55,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 	// if req.UserID == nil || baseUserID != *req.UserID {
 	// 	return nil, service_error.ErrTicketUnauthorizedAccess
 	// }
+
 	ticket := &entity.Ticket{
 		UserID:        &baseUserID,
 		Title:         req.Title,
@@ -66,10 +66,34 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Status:        entity.TicketOpen,
 	}
 	err = s.repo.Create(ctx, ticket)
-	tags, err := s.tagRepo.FindByIDs(ctx, req.TagIDs) // TODO : Check Err Types
 	if err != nil {
 		return nil, err
 	}
+
+	var joinTags []entity.TicketAnnouncementTag
+	var tags []entity.Tag
+	if len(req.TagIDs) > 0 {
+		tags, err = s.tagRepo.FindByIDs(ctx, req.TagIDs)
+		if err != nil {
+			return nil, err
+		}
+
+		joinTags = make([]entity.TicketAnnouncementTag, len(tags))
+		for i, t := range tags {
+			joinTags[i] = entity.TicketAnnouncementTag{
+				TagID:    t.ID,
+				TicketID: &ticket.ID,
+				Tag:      t,
+			}
+		}
+	}
+	// fmt.Println(tags, joinTags, req.TagIDs)
+	ticket.Tags = joinTags
+	err = s.repo.CreateTags(ctx, ticket)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.CreateTicketResponse{
 		ID:          ticket.ID,
 		UserID:      ticket.UserID,
@@ -80,7 +104,7 @@ func (s *ticketService) Create(ctx context.Context, req *dto.CreateTicketRequest
 		Status:      string(ticket.Status),
 		CreatedAt:   ticket.CreatedAt,
 		Tags:        dto.MapTagsToSliceResponse(tags),
-	}, err
+	}, nil
 }
 
 func (s *ticketService) Delete(ctx context.Context, id uuid.UUID) error {

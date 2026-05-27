@@ -36,21 +36,13 @@ func (c *TicketController) Create(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
 	}
 
-	ticket := &dto.CreateTicketRequest{
-		Title:         req.Title,
-		Description:   req.Description,
-		Body:          req.Body,
-		Category:      req.Category,
-		Accessibility: req.Accessibility,
-	}
-
-	data, err := c.ticketService.Create(ctx, ticket)
+	data, err := c.ticketService.Create(ctx, &req)
 	if err != nil {
 		switch err {
 
@@ -151,7 +143,7 @@ func (c *TicketController) Update(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
@@ -204,7 +196,7 @@ func (c *TicketController) UpdateTicketStatus(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
@@ -376,7 +368,7 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 			Success:    false,
 			StatusCode: http.StatusBadRequest,
 			Message:    "invalid_request_body",
-			Errors:     errList,
+			Errors:     append(errList, err.Error()),
 		}
 		res.SendResponse(ctx)
 		return
