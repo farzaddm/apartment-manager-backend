@@ -231,7 +231,7 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, id uuid.UUI
 
 	return &dto.TicketBaseResponseWithAllRelations{
 		TicketBaseResponse: *dto.MapTicketToBaseResponse(ticket),
-		Comments:           dto.MapCommentsToSliceResponse(ticket.Comments),
+		Comments:           dto.MapCommentsToResponseWithUserSlice(ticket.Comments),
 		User:               *dto.MapUserToUserResponse(&ticket.User),
 	}, nil
 }

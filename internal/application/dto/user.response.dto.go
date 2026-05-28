@@ -35,15 +35,16 @@ type UploadImageResponse struct {
 }
 
 type UserResponse struct {
-	ID        uuid.UUID          `json:"user_id"`
-	FirstName string             `json:"first_name"`
-	LastName  string             `json:"last_name"`
-	Email     string             `json:"email"`
-	Username  string             `json:"username"`
-	Gender    *entity.GenderType `json:"gender"`
-	Role      entity.UserRole    `json:"role"`
-	Phone     string             `json:"phone"`
-	Unit      *UnitResponse      `json:"unit,omitempty"`
+	ID              uuid.UUID          `json:"user_id"`
+	FirstName       string             `json:"first_name"`
+	LastName        string             `json:"last_name"`
+	Email           string             `json:"email"`
+	Username        string             `json:"username"`
+	Gender          *entity.GenderType `json:"gender"`
+	Role            entity.UserRole    `json:"role"`
+	Phone           string             `json:"phone"`
+	Unit            *UnitResponse      `json:"unit,omitempty"`
+	ProfileImageURL *string            `json:"profile_image_url"`
 }
 
 type UserResponseWithAllRelations struct {
@@ -59,15 +60,16 @@ func MapUserToUserResponse(u *entity.User) *UserResponse {
 	}
 
 	return &UserResponse{
-		ID:        u.ID,
-		FirstName: u.FirstName,
-		LastName:  u.LastName,
-		Email:     u.Email,
-		Username:  u.Username,
-		Gender:    u.Gender,
-		Role:      u.Role,
-		Phone:     u.Phone,
-		Unit:      MapUnitToResponse(u.Unit),
+		ID:              u.ID,
+		FirstName:       u.FirstName,
+		LastName:        u.LastName,
+		Email:           u.Email,
+		Username:        u.Username,
+		Gender:          u.Gender,
+		Role:            u.Role,
+		Phone:           u.Phone,
+		Unit:            MapUnitToResponse(u.Unit),
+		ProfileImageURL: u.ProfileImageURL,
 	}
 }
 
