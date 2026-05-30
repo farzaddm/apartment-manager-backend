@@ -74,11 +74,22 @@ func (s *unitService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateU
 }
 
 func (s *unitService) PopUser(ctx context.Context, id uuid.UUID) (*dto.UnitResponse, error) {
+	u, err := s.repo.GetByID(ctx, id.String())
+	if err != nil {
+		return nil, err
+	}
+	if u.UserID == nil {
+		return dto.MapUnitToResponse(u), nil
+	}
 	updatedUnit, err := s.repo.PopUser(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, service_error.ErrUnitNotFound
 		}
+		return nil, err
+	}
+	err = s.userRepo.Delete(ctx, u.UserID.String())
+	if err != nil {
 		return nil, err
 	}
 
