@@ -21,3 +21,7 @@ type ChangePasswordRequest struct {
 type PushUserToUnitRequest struct {
 	UserID uuid.UUID `json:"user_id" binding:"required"`
 }
+
+type CheckUserPhoneNumberRequest struct {
+	Phone string `json:"phone" binding:"required"`
+}

@@ -12,6 +12,7 @@ import (
 	"apartment-manager-backend/internal/presentation/controller"
 	"apartment-manager-backend/internal/presentation/routes"
 	"apartment-manager-backend/pkg/hasher"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -92,7 +93,7 @@ func main() {
 	commentService := service.NewCommentService(commentRepo, ticketRepo)
 	ruleService := service.NewRuleService(ruleRepo)
 	pollService := service.NewPollService(pollRepo)
-	unitService := service.NewUnitService(unitRepo,userRepo)
+	unitService := service.NewUnitService(unitRepo, userRepo)
 
 	// --- CONTROLLER ---
 	authController := controller.NewAuthController(authService)
@@ -127,6 +128,6 @@ func main() {
 	//TODO : THIS IMP IS JUST FOR TEST BUT IN RELEASE VER WE NEED TO IN MORE PROPER IMP
 	initsamples.CreateOrOverWriteManagersAndAdminAndResident(db, passwordHasher)
 
-	log.Println("server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Printf("server running on :%s\n", cfg.App.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.App.Port), r))
 }

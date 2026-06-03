@@ -45,6 +45,7 @@ type UserResponse struct {
 	Phone           string             `json:"phone"`
 	Unit            *UnitResponse      `json:"unit,omitempty"`
 	ProfileImageURL *string            `json:"profile_image_url"`
+	CreatedAt       time.Time          `json:"created_at"`
 }
 
 type UserResponseWithAllRelations struct {
@@ -70,6 +71,7 @@ func MapUserToUserResponse(u *entity.User) *UserResponse {
 		Phone:           u.Phone,
 		Unit:            MapUnitToResponse(u.Unit),
 		ProfileImageURL: u.ProfileImageURL,
+		CreatedAt:       u.CreatedAt,
 	}
 }
 
