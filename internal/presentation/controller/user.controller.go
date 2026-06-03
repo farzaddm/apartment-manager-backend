@@ -155,3 +155,19 @@ func (u *UserController) SetProfileImage(c *gin.Context) {
 
 	response.Success(c, http.StatusOK, "profile_updated_successfully", image_addr)
 }
+
+func (u *UserController) CheckPhoneNumber(c *gin.Context) {
+	var req dto.CheckUserPhoneNumberRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, http.StatusBadRequest, "validation_failed", err)
+		return
+	}
+
+	ex, err := u.userService.ExistSPhoneNumber(c, req)
+	if err != nil {
+		response.Error(c, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	response.Success(c, http.StatusOK, "profile_updated_successfully", ex)
+}

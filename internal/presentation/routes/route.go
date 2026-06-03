@@ -41,6 +41,8 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 	r.POST("/login", handler.Auth.Login)
 	r.POST("/refresh", handler.Auth.Refresh)
 
+	r.POST("/auth/check-phone", handler.User.CheckPhoneNumber)
+
 	protected := r.Group("/")
 	protected.Use(middleware.AuthMiddleware(jwtSvc))
 	{
@@ -63,7 +65,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		SetUpApartmentRoutes(protected, adminOnly, handler.Apartment)
 		SetUpTicketRoutes(protected, managementGroup, handler.Ticket)
 		SetUpCommentRoutes(protected, handler.Comment)
-		SetUpUnitRoutes(managementGroup,handler.Unit)
+		SetUpUnitRoutes(managementGroup, handler.Unit)
 
 		managementGroup.POST("/invite-code", handler.InviteCode.Create)
 		managementGroup.POST("/tags", handler.Tag.Create)

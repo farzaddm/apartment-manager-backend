@@ -13,6 +13,7 @@ type UserInterface interface {
 	Delete(ctx context.Context, id string) error
 
 	ExistEmail(ctx context.Context, email string) (bool, error)
+	ExistPhone(ctx context.Context, phone string) (bool, error)
 
 	GetByPhone(ctx context.Context, phone string) (*entity.User, error)
 	GetByUsername(ctx context.Context, username string) (*entity.User, error)

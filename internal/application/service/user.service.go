@@ -74,3 +74,13 @@ func (s *UserService) GetById(ctx context.Context, id string) (*dto.UserProfileR
 func (s *UserService) SetProfileImage(ctx context.Context, userID string, filePath string) error {
 	return s.UserRepo.UpdateProfileImage(ctx, userID, filePath)
 }
+
+func (s *UserService) ExistSPhoneNumber(ctx context.Context, phone dto.CheckUserPhoneNumberRequest) (*dto.ExistsResponse, error) {
+	ex, err := s.UserRepo.ExistPhone(ctx, phone.Phone)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.ExistsResponse{
+		Exists: ex,
+	}, nil
+}
