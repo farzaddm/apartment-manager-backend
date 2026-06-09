@@ -5,7 +5,8 @@ import "github.com/google/uuid"
 type Ticket struct {
 	BaseModel
 
-	UserID *uuid.UUID
+	UserID      *uuid.UUID
+	ApartmentID uuid.UUID
 
 	Title       string
 	Description string
@@ -18,6 +19,8 @@ type Ticket struct {
 	Accessibility TicketAccessibility
 
 	User User
+
+	Apartment Apartment
 
 	Comments []Comment
 
