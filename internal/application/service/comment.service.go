@@ -49,8 +49,11 @@ func (s *commentService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, t
 	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
 	isTicketPublic := ticket.Accessibility == entity.PublicTicket
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
-	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+	cond := cond_authz && isNotClosedTicket
+
 	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
@@ -107,8 +110,10 @@ func (s *commentService) Update(ctx context.Context, tokenKeys *dto.TokenKeys, i
 
 	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
 	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
-	cond := isNotForeignApartment && isYourComment
+	cond_authz := isNotForeignApartment && isYourComment
+	cond := cond_authz && isNotClosedTicket
 	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
@@ -148,8 +153,10 @@ func (s *commentService) Delete(ctx context.Context, tokenKeys *dto.TokenKeys, i
 	isManger := tokenKeys.GetRole() == entity.RoleManager
 	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
 	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
-	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && isYourComment)
+	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && isYourComment)
+	cond := cond_authz && isNotClosedTicket
 	if !cond {
 		return service_error.ErrCommentUnauthorizedAccess
 	}
@@ -189,6 +196,7 @@ func (s *commentService) GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, 
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
 
 	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+
 	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
