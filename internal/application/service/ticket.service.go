@@ -3,7 +3,7 @@ package service
 import (
 	"apartment-manager-backend/internal/application/dto"
 	service_error "apartment-manager-backend/internal/application/service/error"
-	"apartment-manager-backend/internal/constant"
+	"apartment-manager-backend/internal/domain/constant"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"errors"
