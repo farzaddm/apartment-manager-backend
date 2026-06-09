@@ -5,6 +5,7 @@ import (
 	"apartment-manager-backend/internal/application/service"
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"fmt"
+	"log"
 
 	"apartment-manager-backend/pkg/response"
 	"apartment-manager-backend/pkg/validator"
@@ -374,7 +375,32 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 		return
 	}
 
-	data, err := c.commentService.Create(ctx, ticketID, &req)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
+	data, err := c.commentService.Create(ctx, tokenKeys, ticketID, &req)
 	if err != nil {
 		switch err {
 
@@ -382,25 +408,16 @@ func (c *TicketController) CreateComment(ctx *gin.Context) {
 			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
 			return
 
-		case service_error.ErrUserIDNotFoundInContext,
-			service_error.ErrUserRoleNotFoundInContext:
-			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
-			return
-
-		case service_error.ErrCommonParseStrToUUID:
-			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
-			return
-
 		case service_error.ErrCommentUnauthorizedAccess:
-			response.Error(ctx, http.StatusForbidden, "comment_access_denied", err)
+			response.Error(ctx, http.StatusForbidden, "forbidden_comment_access", err)
 			return
 
 		case service_error.ErrCommentNotFound:
-			response.Error(ctx, http.StatusNotFound, "comment_not_found", err)
+			response.Error(ctx, http.StatusNotFound, "comment_order_not_found", err)
 			return
 
 		default:
-			response.Error(ctx, http.StatusInternalServerError, "failed_to_create_comment", err)
+			response.Error(ctx, http.StatusInternalServerError, "create_comment_failed", err)
 			return
 		}
 	}

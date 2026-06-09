@@ -6,6 +6,7 @@ import (
 	service_error "apartment-manager-backend/internal/application/service/error"
 	"apartment-manager-backend/pkg/response"
 	"apartment-manager-backend/pkg/validator"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,34 +30,57 @@ func (h *CommentController) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	comment, err := h.commentService.GetByID(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
 		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
+	comment, err := h.commentService.GetByID(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
 		case service_error.ErrTicketOfCommentOrCommentNotFound:
-			response.Error(ctx, http.StatusNotFound, "ticket_or_comment_not_found", err)
+			response.Error(ctx, http.StatusNotFound, "comment_or_ticket_not_found", err)
+			return
+
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
 			return
 
 		case service_error.ErrCommentNotFound:
 			response.Error(ctx, http.StatusNotFound, "comment_not_found", err)
 			return
 
-		case service_error.ErrUserIDNotFoundInContext,
-			service_error.ErrUserRoleNotFoundInContext:
-			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
-			return
-
-		case service_error.ErrCommonParseStrToUUID:
-			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
-			return
-
 		case service_error.ErrCommentUnauthorizedAccess:
-			response.Error(ctx, http.StatusForbidden, "comment_access_denied", err)
+			response.Error(ctx, http.StatusForbidden, "forbidden_comment_access", err)
 			return
 
 		default:
-			response.Error(ctx, http.StatusInternalServerError, "failed_to_fetch_comment", err)
+			response.Error(ctx, http.StatusInternalServerError, "get_comment_failed", err)
 			return
+
 		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "comment_fetched_successfully", comment)
@@ -83,32 +107,53 @@ func (h *CommentController) UpdateBody(ctx *gin.Context) {
 		return
 	}
 
-	data, err := h.commentService.Update(ctx, id, &req)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
+	data, err := h.commentService.Update(ctx, tokenKeys, id, &req)
 	if err != nil {
 		switch err {
 
 		case service_error.ErrTicketOfCommentOrCommentNotFound:
-			response.Error(ctx, http.StatusNotFound, "ticket_or_comment_not_found", err)
+			response.Error(ctx, http.StatusNotFound, "comment_or_ticket_not_found", err)
+			return
+
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
 			return
 
 		case service_error.ErrCommentNotFound:
 			response.Error(ctx, http.StatusNotFound, "comment_not_found", err)
 			return
 
-		case service_error.ErrUserIDNotFoundInContext:
-			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
-			return
-
-		case service_error.ErrCommonParseStrToUUID:
-			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
-			return
-
 		case service_error.ErrCommentUnauthorizedAccess:
-			response.Error(ctx, http.StatusForbidden, "comment_access_denied", err)
+			response.Error(ctx, http.StatusForbidden, "forbidden_comment_access", err)
 			return
 
 		default:
-			response.Error(ctx, http.StatusInternalServerError, "failed_to_update_comment", err)
+			response.Error(ctx, http.StatusInternalServerError, "update_comment_failed", err)
 			return
 		}
 	}
@@ -123,29 +168,50 @@ func (h *CommentController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.commentService.Delete(ctx, id); err != nil {
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
+	if err := h.commentService.Delete(ctx, tokenKeys, id); err != nil {
 		switch err {
 
 		case service_error.ErrCommentNotFound:
 			response.Error(ctx, http.StatusNotFound, "comment_not_found", err)
 			return
 
-		case service_error.ErrUserIDNotFoundInContext,
-			service_error.ErrUserRoleNotFoundInContext:
-			response.Error(ctx, http.StatusUnauthorized, "unauthorized_access", err)
-			return
-
-		case service_error.ErrCommonParseStrToUUID:
-			response.Error(ctx, http.StatusBadRequest, "invalid_uuid_format", err)
+		case service_error.ErrTicketNotFound:
+			response.Error(ctx, http.StatusNotFound, "ticket_not_found", err)
 			return
 
 		case service_error.ErrCommentUnauthorizedAccess:
-			response.Error(ctx, http.StatusForbidden, "comment_access_denied", err)
+			response.Error(ctx, http.StatusForbidden, "forbidden_comment_access", err)
 			return
 
 		default:
-			response.Error(ctx, http.StatusInternalServerError, "failed_to_delete_comment", err)
+			response.Error(ctx, http.StatusInternalServerError, "delete_comment_failed", err)
 			return
+
 		}
 	}
 
