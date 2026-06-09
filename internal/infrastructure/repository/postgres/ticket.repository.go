@@ -59,6 +59,7 @@ func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.T
 				Order("tags.name ASC")
 		}).
 		Preload("Tags.Tag").
+		Preload("User").
 		First(&ticket, "id = ?", id).
 		Error
 
