@@ -51,13 +51,15 @@ type TicketBaseResponseWithComments struct {
 
 type TicketBaseResponseWithUser struct {
 	TicketBaseResponse
-	User UserResponse `json:"user"`
+	User      UserResponse      `json:"user"`
+	Apartment ApartmentResponse `json:"apartment"`
 }
 
 type TicketBaseResponseWithAllRelations struct {
 	TicketBaseResponse
-	Comments []CommentResponseWithUser `json:"comments"`
-	User     UserResponse              `json:"user"`
+	Comments  []CommentResponseWithUser `json:"comments"`
+	User      UserResponse              `json:"user"`
+	Apartment ApartmentResponse         `json:"apartment"`
 }
 
 type TicketBaseResponseWithCommentCount struct {

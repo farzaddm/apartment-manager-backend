@@ -46,7 +46,7 @@ func (s *commentService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, t
 	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
 	isManger := tokenKeys.GetRole() == entity.RoleManager
 	isResident := tokenKeys.GetRole() == entity.RoleResident
-	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isTicketPublic := ticket.Accessibility == entity.PublicTicket
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
 	isNotClosedTicket := ticket.Status != entity.TicketClosed
@@ -108,7 +108,7 @@ func (s *commentService) Update(ctx context.Context, tokenKeys *dto.TokenKeys, i
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
 	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
@@ -151,7 +151,7 @@ func (s *commentService) Delete(ctx context.Context, tokenKeys *dto.TokenKeys, i
 	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
 	isResident := tokenKeys.GetRole() == entity.RoleResident
 	isManger := tokenKeys.GetRole() == entity.RoleManager
-	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
 	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
@@ -191,7 +191,7 @@ func (s *commentService) GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, 
 	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
 	isResident := tokenKeys.GetRole() == entity.RoleResident
 	isManger := tokenKeys.GetRole() == entity.RoleManager
-	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isTicketPublic := ticket.Accessibility == entity.PublicTicket
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
 
@@ -236,7 +236,7 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, tokenKeys *
 	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
 	isResident := tokenKeys.GetRole() == entity.RoleResident
 	isManger := tokenKeys.GetRole() == entity.RoleManager
-	isNotForeignApartment := tokenKeys.GetApartmentID() == *ticket.User.ApartmentID // TODO : WARNING!!!!!!
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isTicketPublic := ticket.Accessibility == entity.PublicTicket
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
 

@@ -60,6 +60,7 @@ func (r *ticketRepository) GetByID(ctx context.Context, id uuid.UUID) (*entity.T
 		}).
 		Preload("Tags.Tag").
 		Preload("User").
+		Preload("Apartment").
 		First(&ticket, "id = ?", id).
 		Error
 
@@ -78,6 +79,7 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 
 	err := r.db.WithContext(ctx).
 		Preload("User").
+		Preload("Apartment").
 		Preload("Comments", func(db *gorm.DB) *gorm.DB {
 			return db.Order("comments.committed_order ASC")
 		}).
@@ -103,7 +105,7 @@ func (r *ticketRepository) GetByIDWithAllRelations(ctx context.Context, id uuid.
 
 // /////////////////// List / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 // TODO: im not sure that is this code worked or not ? (maybe need some struct tags in domainRepo.TicketWithCommentCount)
-func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter, me uuid.UUID, role entity.UserRole) ([]domainRepo.TicketWithCommentCount, error) {
+func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFilter, me uuid.UUID, role entity.UserRole, apartmentID uuid.UUID) ([]domainRepo.TicketWithCommentCount, error) {
 	var tickets []domainRepo.TicketWithCommentCount
 
 	// TODO: Verify whether using Select here could cause issues.
@@ -111,8 +113,12 @@ func (r *ticketRepository) List(ctx context.Context, filter domainRepo.TicketFil
 		Model(&entity.Ticket{}).
 		Select("tickets.*, COUNT(comments.id) as comment_count").
 		Joins("LEFT JOIN comments ON comments.ticket_id = tickets.id").
-		Order("tickets.created_at ASC").
-		Group("tickets.id")
+		Group("tickets.id").
+		Order("tickets.created_at ASC")
+
+	if role != entity.RoleAdmin {
+		query = query.Where("tickets.apartment_id = ?", apartmentID)
+	}
 
 	if !(role == entity.RoleAdmin || role == entity.RoleManager) {
 		query = query.Where(
