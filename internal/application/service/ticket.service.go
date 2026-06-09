@@ -91,15 +91,17 @@ func (s *ticketService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, re
 	}
 
 	return &dto.CreateTicketResponse{
-		ID:          ticket.ID,
-		UserID:      ticket.UserID,
-		Title:       ticket.Title,
-		Description: ticket.Description,
-		Body:        ticket.Body,
-		Category:    string(ticket.Category),
-		Status:      string(ticket.Status),
-		CreatedAt:   ticket.CreatedAt,
-		Tags:        dto.MapTagsToSliceResponse(tags),
+		ID:            ticket.ID,
+		UserID:        ticket.UserID,
+		Accessibility: string(ticket.Accessibility),
+		ApartmentID:   ticket.ApartmentID,
+		Title:         ticket.Title,
+		Description:   ticket.Description,
+		Body:          ticket.Body,
+		Category:      string(ticket.Category),
+		Status:        string(ticket.Status),
+		CreatedAt:     ticket.CreatedAt,
+		Tags:          dto.MapTagsToSliceResponse(tags),
 	}, nil
 }
 
@@ -116,9 +118,8 @@ func (s *ticketService) Delete(ctx context.Context, tokenKeys *dto.TokenKeys, id
 	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
 	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
 
-	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment)
-	cond := cond_authz && isYourTicket
-	if !cond {
+	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && isYourTicket)
+	if !cond_authz {
 		return service_error.ErrTicketUnauthorizedAccess
 	}
 
@@ -203,7 +204,9 @@ func (s *ticketService) GetByIDWithAllRelations(ctx context.Context, tokenKeys *
 
 // TODO : This list it's not fully
 func (s *ticketService) List(ctx context.Context, tokenKeys *dto.TokenKeys, filter dto.TicketFilterRequest) ([]dto.TicketBaseResponseWithCommentCount, error) {
-
+	if tokenKeys.GetApartmentID() == constant.NilApartmentIDKeyToken && tokenKeys.GetRole() != entity.RoleAdmin {
+		return nil, service_error.ErrTicketUnauthorizedAccess
+	}
 	new_filter := domainRepo.TicketFilter{
 		UserID:   filter.UserUUID,
 		Status:   filter.Status,

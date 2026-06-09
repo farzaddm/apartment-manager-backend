@@ -20,28 +20,31 @@ type TicketResponse struct {
 }
 
 type CreateTicketResponse struct {
-	ID          uuid.UUID  `json:"id"`
-	UserID      *uuid.UUID `json:"user_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Body        string     `json:"body"`
-	Category    string     `json:"category"`
-	Status      string     `json:"status"`
-	CreatedAt   time.Time  `json:"created_at"`
-	Tags        []TagResponse
+	ID            uuid.UUID  `json:"id"`
+	UserID        *uuid.UUID `json:"user_id"`
+	ApartmentID   uuid.UUID  `json:"apartment_id"`
+	Accessibility string     `json:"accessibility"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description"`
+	Body          string     `json:"body"`
+	Category      string     `json:"category"`
+	Status        string     `json:"status"`
+	CreatedAt     time.Time  `json:"created_at"`
+	Tags          []TagResponse
 }
 
 // // TODO : Coupling TicketResponse!!!!!! Remove one of them!!!!!
 type TicketBaseResponse struct {
-	ID          uuid.UUID     `json:"id"`
-	UserID      *uuid.UUID    `json:"user_id"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	Body        string        `json:"body"`
-	Category    string        `json:"category"`
-	Status      string        `json:"status"`
-	Tags        []TagResponse `json:"tags"`
-	CreatedAt   time.Time     `json:"created_at"`
+	ID            uuid.UUID     `json:"id"`
+	UserID        *uuid.UUID    `json:"user_id"`
+	Accessibility string        `json:"accessibility"`
+	Title         string        `json:"title"`
+	Description   string        `json:"description"`
+	Body          string        `json:"body"`
+	Category      string        `json:"category"`
+	Status        string        `json:"status"`
+	Tags          []TagResponse `json:"tags"`
+	CreatedAt     time.Time     `json:"created_at"`
 }
 
 type TicketBaseResponseWithComments struct {
@@ -79,15 +82,16 @@ func MapTicketToBaseResponse(ticket *entity.Ticket) *TicketBaseResponse {
 	}
 
 	return &TicketBaseResponse{
-		ID:          ticket.ID,
-		UserID:      ticket.UserID,
-		Title:       ticket.Title,
-		Description: ticket.Description,
-		Body:        ticket.Body,
-		Category:    string(ticket.Category),
-		Status:      string(ticket.Status),
-		CreatedAt:   ticket.CreatedAt,
-		Tags:        tags, //TODO : Fix Ticket-Tags Relation
+		ID:            ticket.ID,
+		UserID:        ticket.UserID,
+		Accessibility: string(ticket.Accessibility),
+		Title:         ticket.Title,
+		Description:   ticket.Description,
+		Body:          ticket.Body,
+		Category:      string(ticket.Category),
+		Status:        string(ticket.Status),
+		CreatedAt:     ticket.CreatedAt,
+		Tags:          tags, //TODO : Fix Ticket-Tags Relation
 	}
 }
 

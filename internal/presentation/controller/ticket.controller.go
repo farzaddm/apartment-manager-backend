@@ -139,7 +139,15 @@ func (c *TicketController) List(ctx *gin.Context) {
 
 	tickets, err := c.ticketService.List(ctx, tokenKeys, filter)
 	if err != nil {
+		switch err {
+		case service_error.ErrTicketUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "ticket_unauthorized_access", err)
+			return
 
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
 	}
 
 	response.Success(ctx, http.StatusOK, "tickets_fetched_successfully", tickets)
