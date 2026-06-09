@@ -85,12 +85,11 @@ func (s *unitService) PopUser(ctx context.Context, tokenKeys *dto.TokenKeys, id 
 	if err != nil {
 		return nil, err
 	}
-	if u.UserID == nil {
-		return dto.MapUnitToResponse(u), nil
-	}
-
 	if tokenKeys.GetRole() != entity.RoleAdmin && u.ApartmentID != tokenKeys.GetApartmentID() {
 		return nil, service_error.ErrUnitUnauthorizedAccess
+	}
+	if u.UserID == nil {
+		return dto.MapUnitToResponse(u), nil
 	}
 
 	updatedUnit, err := s.repo.PopUser(ctx, id)
