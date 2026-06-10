@@ -6,10 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetUpApartmentRoutes(publicG *gin.RouterGroup, adminG *gin.RouterGroup, handler *controller.ApartmentController) {
+func SetUpApartmentRoutes(publicG *gin.RouterGroup, managerG *gin.RouterGroup, adminG *gin.RouterGroup, handler *controller.ApartmentController) {
 	adminG.POST("/apartments", handler.Create)
 	adminG.PUT("/apartments/:apartment_id", handler.Update)
 	adminG.DELETE("/apartments/:apartment_id", handler.Delete)
+	managerG.GET("/apartments/:apartment_id/tickets", handler.GetByIDWithTickets)
 
 	publicG.GET("/apartments/:apartment_id", handler.GetByID)
 	publicG.GET("/apartments/:apartment_id/users", handler.GetByIDWithUsers)

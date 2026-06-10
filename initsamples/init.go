@@ -23,9 +23,12 @@ func CreateOrOverWriteManagersAndAdminAndResident(db *gorm.DB, passwordHasher *h
 	u1, _ := uuid.Parse("77777777-7777-7777-7777-777777777777")
 	u2, _ := uuid.Parse("88888887-8888-8888-8888-888888888888")
 	u3, _ := uuid.Parse("99999999-9999-9999-9999-999999999999")
-	// u4, _ := uuid.Parse("99999999-9999-5555-9999-999999999999")
+	u4, _ := uuid.Parse("99999999-9999-5555-9999-999999999999")
+	u5, _ := uuid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	u6, _ := uuid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+
 	aptID, _ := uuid.Parse("a0000000-0000-0000-0000-000000000000")
-	// aptID2, _ := uuid.Parse("c0000000-0000-0000-0000-000000000000")
+	aptID2, _ := uuid.Parse("c0000000-0000-0000-0000-000000000000")
 
 	users := []entity.User{
 		{
@@ -64,18 +67,42 @@ func CreateOrOverWriteManagersAndAdminAndResident(db *gorm.DB, passwordHasher *h
 			Role:        entity.RoleAdmin,
 			Gender:      GenderPtr(entity.GenderMale),
 		},
-		// {
-		// 	BaseModel:   entity.BaseModel{ID: u4},
-		// 	ApartmentID: &aptID2,
-		// 	FirstName:   "Voldemort2",
-		// 	LastName:    "VoldemortianManager2",
-		// 	Username:    "voldemort_man2",
-		// 	Email:       "voldemort_man2@gmail.com",
-		// 	Phone:       "+14165550992",
-		// 	Password:    h,
-		// 	Role:        entity.RoleManager,
-		// 	Gender:      GenderPtr(entity.GenderMale),
-		// },
+		{
+			BaseModel:   entity.BaseModel{ID: u4},
+			ApartmentID: &aptID2,
+			FirstName:   "Voldemort2",
+			LastName:    "VoldemortianManager2",
+			Username:    "voldemort_man2",
+			Email:       "voldemort_man2@gmail.com",
+			Phone:       "+14165550992",
+			Password:    h,
+			Role:        entity.RoleManager,
+			Gender:      GenderPtr(entity.GenderMale),
+		},
+		{
+			BaseModel:   entity.BaseModel{ID: u5},
+			ApartmentID: &aptID2,
+			FirstName:   "Voldemort2",
+			LastName:    "VoldemortianResident2",
+			Username:    "voldemort_res2",
+			Email:       "voldemort_res2@gmail.com",
+			Phone:       "+14165550098",
+			Password:    h,
+			Role:        entity.RoleResident,
+			Gender:      GenderPtr(entity.GenderMale),
+		},
+		{
+			BaseModel:   entity.BaseModel{ID: u6},
+			ApartmentID: nil,
+			FirstName:   "Voldemort2",
+			LastName:    "VoldemortianAdmin2",
+			Username:    "voldemort_ad2",
+			Email:       "voldemort_ad2@gmail.com",
+			Phone:       "+14165550099",
+			Password:    h,
+			Role:        entity.RoleAdmin,
+			Gender:      GenderPtr(entity.GenderMale),
+		},
 	}
 
 	for _, u := range users {

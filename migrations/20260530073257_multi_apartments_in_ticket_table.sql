@@ -1,6 +1,6 @@
- -- +goose Up
+-- +goose Up
 ALTER TABLE tickets
-ADD COLUMN apartment_id UUID NOT NULL;
+ADD COLUMN apartment_id UUID;
 
 ALTER TABLE tickets
 ADD CONSTRAINT fk_tickets_apartment
@@ -18,22 +18,18 @@ WHERE id IN (
   '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
   '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
   '55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+  '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  '77777777-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  '88888888-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  '99999999-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  'aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+  'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
 );
+
+ALTER TABLE tickets
+ALTER COLUMN apartment_id SET NOT NULL;
 
 -- +goose Down
-UPDATE tickets
-SET apartment_id = NULL
-WHERE id IN (
-  '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
-);
-
-
 DROP INDEX IF EXISTS idx_tickets_apartment_id;
 
 ALTER TABLE tickets

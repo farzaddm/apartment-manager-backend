@@ -7,6 +7,7 @@ import (
 	"apartment-manager-backend/pkg/response"
 	"apartment-manager-backend/pkg/validator"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,31 @@ func (c *ApartmentController) Create(ctx *gin.Context) {
 		return
 	}
 
-	data, err := c.apartmentService.Create(ctx, &req)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+	data, err := c.apartmentService.Create(ctx, tokenKeys, &req)
 	if err != nil {
 		response.Error(ctx, http.StatusInternalServerError, "failed_to_create_apartment", err)
 		return
@@ -72,8 +97,33 @@ func (c *ApartmentController) Update(ctx *gin.Context) {
 		return
 	}
 
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
 	var data *dto.ApartmentResponse
-	if data, err = c.apartmentService.Update(ctx, id, &req); err != nil {
+	if data, err = c.apartmentService.Update(ctx, tokenKeys, id, &req); err != nil {
 		if errors.Is(err, service_error.ErrApartmentNotFound) {
 			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
 			return
@@ -94,7 +144,31 @@ func (c *ApartmentController) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.apartmentService.Delete(ctx, id); err != nil {
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+	if err := c.apartmentService.Delete(ctx, tokenKeys, id); err != nil {
 		if errors.Is(err, service_error.ErrApartmentNotFound) {
 			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
 			return
@@ -115,14 +189,46 @@ func (c *ApartmentController) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	apartment, err := c.apartmentService.GetByID(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
-		if errors.Is(err, service_error.ErrApartmentNotFound) {
-			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
 			return
 		}
-		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment", err)
-		return
+	}
+	apartment, err := c.apartmentService.GetByID(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "apartment_fetched_successfully", apartment)
@@ -137,14 +243,47 @@ func (c *ApartmentController) GetByIDWithUsers(ctx *gin.Context) {
 		return
 	}
 
-	apartment, err := c.apartmentService.GetWithUsers(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
-		if errors.Is(err, service_error.ErrApartmentNotFound) {
-			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
 			return
 		}
-		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_users", err)
-		return
+	}
+	apartment, err := c.apartmentService.GetWithUsers(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "apartment_users_fetched_successfully", apartment)
@@ -159,14 +298,48 @@ func (c *ApartmentController) GetByIDWithRules(ctx *gin.Context) {
 		return
 	}
 
-	apartment, err := c.apartmentService.GetWithRules(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
-		if errors.Is(err, service_error.ErrApartmentNotFound) {
-			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
 			return
 		}
-		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_rules", err)
-		return
+	}
+
+	apartment, err := c.apartmentService.GetWithRules(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "apartment_rules_fetched_successfully", apartment)
@@ -182,14 +355,48 @@ func (c *ApartmentController) GetByIDWithAnnouncements(ctx *gin.Context) {
 		return
 	}
 
-	apartment, err := c.apartmentService.GetWithAnnouncements(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
-		if errors.Is(err, service_error.ErrApartmentNotFound) {
-			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
 			return
 		}
-		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_announcements", err)
-		return
+	}
+
+	apartment, err := c.apartmentService.GetWithAnnouncements(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "apartment_announcements_fetched_successfully", apartment)
@@ -204,15 +411,105 @@ func (c *ApartmentController) GetByIDWithInviteCodes(ctx *gin.Context) {
 		return
 	}
 
-	apartment, err := c.apartmentService.GetWithInviteCodes(ctx, id)
+	tokenKeys, err := dto.NewTokenKeys(ctx)
 	if err != nil {
-		if errors.Is(err, service_error.ErrApartmentNotFound) {
-			response.Error(ctx, http.StatusNotFound, "not_found_apartment", err)
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
 			return
 		}
-		response.Error(ctx, http.StatusInternalServerError, "failed_to_get_apartment_invite_codes", err)
-		return
+	}
+
+	apartment, err := c.apartmentService.GetWithInviteCodes(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
 	}
 
 	response.Success(ctx, http.StatusOK, "apartment_invite_codes_fetched_successfully", apartment)
+}
+
+func (c *ApartmentController) GetByIDWithTickets(ctx *gin.Context) {
+	idParam := ctx.Param("apartment_id")
+
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id", err)
+		return
+	}
+
+	tokenKeys, err := dto.NewTokenKeys(ctx)
+	if err != nil {
+		switch err {
+		case dto.ErrUserIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_id_not_found_in_context", err)
+			return
+		case dto.ErrUserRoleNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "user_role_not_found_in_context", err)
+			return
+		case dto.ErrApartmentIDNotFoundInContext:
+			response.Error(ctx, http.StatusUnauthorized, "apartment_id_not_found_in_context", err)
+			return
+		case dto.ErrUserIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_user_id_format", err)
+			return
+		case dto.ErrApartmentIDCantParseToUUID:
+			response.Error(ctx, http.StatusBadRequest, "invalid_apartment_id_format", err)
+			return
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "unexpected_error", err)
+			log.Println(err)
+			return
+		}
+	}
+
+	apartment, err := c.apartmentService.GetWithTickets(ctx, tokenKeys, id)
+	if err != nil {
+		switch err {
+
+		case service_error.ErrApartmentNotFound:
+			response.Error(ctx, http.StatusNotFound, "apartment_not_found", err)
+			return
+
+		case service_error.ErrApartmentUnauthorizedAccess:
+			response.Error(ctx, http.StatusForbidden, "apartment_unauthorized_access", err)
+			return
+
+		default:
+			response.Error(ctx, http.StatusInternalServerError, "internal_server_error", err)
+			return
+		}
+
+	}
+
+	response.Success(ctx, http.StatusOK, "apartment_rules_fetched_successfully", apartment)
 }

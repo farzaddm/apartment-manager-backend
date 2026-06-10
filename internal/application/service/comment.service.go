@@ -3,7 +3,6 @@ package service
 import (
 	"apartment-manager-backend/internal/application/dto"
 	service_error "apartment-manager-backend/internal/application/service/error"
-	"apartment-manager-backend/internal/constant"
 	"apartment-manager-backend/internal/domain/entity"
 	domainRepo "apartment-manager-backend/internal/domain/repository/postgres"
 	"context"
@@ -14,15 +13,15 @@ import (
 )
 
 type CommentService interface {
-	Create(ctx context.Context, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error)
+	Create(ctx context.Context, tokenKeys *dto.TokenKeys, ticketID uuid.UUID, comment *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error)
 
-	Update(ctx context.Context, id uuid.UUID, comment *dto.UpdateCommentRequest) (*dto.CommentResponse, error)
+	Update(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID, comment *dto.UpdateCommentRequest) (*dto.CommentResponse, error)
 
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) error
 
-	GetByID(ctx context.Context, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error)
+	GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error)
 
-	GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error)
+	GetLastOrderByTicketID(ctx context.Context, tokenKeys *dto.TokenKeys, ticketID uuid.UUID) (*int, error)
 }
 
 type commentService struct {
@@ -34,7 +33,8 @@ func NewCommentService(commentRepo domainRepo.CommentInterface, ticketRepo domai
 	return &commentService{commentRepo: commentRepo, ticketRepo: ticketRepo}
 }
 
-func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error) {
+// TODO : for its handler
+func (s *commentService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, ticketID uuid.UUID, req *dto.CreateCommentRequest) (*dto.CreateCommentResponse, error) {
 	ticket, err := s.ticketRepo.GetByID(ctx, ticketID)
 	if err != nil {
 		return nil, err
@@ -43,25 +43,18 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
-	if rawBaseUserID == nil {
-		return nil, service_error.ErrUserIDNotFoundInContext
-	}
-	str_baseUserID := rawBaseUserID.(string)
-	baseUserID, err := uuid.Parse(str_baseUserID)
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isManger := tokenKeys.GetRole() == entity.RoleManager
+	isResident := tokenKeys.GetRole() == entity.RoleResident
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
+	isTicketPublic := ticket.Accessibility == entity.PublicTicket
+	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
-	if err != nil {
-		return nil, service_error.ErrCommonParseStrToUUID
-	}
+	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+	cond := cond_authz && isNotClosedTicket
 
-	rawRole := ctx.Value("role") // IT MUST BE EXIST!
-	if rawRole == nil {
-		return nil, service_error.ErrUserRoleNotFoundInContext
-	}
-	str_role := rawRole.(string)
-	role := entity.UserRole(str_role)
-
-	if ticket.Accessibility == entity.PrivateTicket && role == entity.RoleResident && (ticket.UserID == nil || baseUserID != *ticket.UserID) {
+	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 
@@ -77,12 +70,12 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	// if lastOrder != nil {
 	// 	order = *lastOrder + 1
 	// }
-
+	temp := tokenKeys.GetUserID()
 	comment := &entity.Comment{
 		TicketID:       ticketID,
 		Body:           req.Body,
 		CommittedOrder: *lastOrder + 1,
-		UserID:         &baseUserID,
+		UserID:         &temp,
 	}
 	err = s.commentRepo.Create(ctx, comment)
 	if err != nil {
@@ -98,7 +91,7 @@ func (s *commentService) Create(ctx context.Context, ticketID uuid.UUID, req *dt
 	}, nil
 }
 
-func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateCommentRequest) (*dto.CommentResponse, error) {
+func (s *commentService) Update(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID, req *dto.UpdateCommentRequest) (*dto.CommentResponse, error) {
 	comm, err := s.commentRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -107,20 +100,24 @@ func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.Upda
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
 
-	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
-	if rawBaseUserID == nil {
-		return nil, service_error.ErrUserIDNotFoundInContext
-	}
-	str_baseUserID := rawBaseUserID.(string)
-	baseUserID, err := uuid.Parse(str_baseUserID)
-
+	ticket, err := s.ticketRepo.GetByID(ctx, comm.TicketID)
 	if err != nil {
-		return nil, service_error.ErrCommonParseStrToUUID
+		return nil, err
+	}
+	if ticket == nil {
+		return nil, service_error.ErrTicketNotFound
 	}
 
-	if comm.UserID == nil || *comm.UserID != baseUserID {
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
+	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
+
+	cond_authz := isNotForeignApartment && isYourComment
+	cond := cond_authz && isNotClosedTicket
+	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
+
 	comment := &entity.Comment{
 		Body: req.Body,
 	}
@@ -134,7 +131,7 @@ func (s *commentService) Update(ctx context.Context, id uuid.UUID, req *dto.Upda
 	return dto.MapCommentToResponse(comm), nil
 }
 
-func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *commentService) Delete(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) error {
 	comm, err := s.commentRepo.GetByID(ctx, id)
 	if err != nil {
 		return err
@@ -143,25 +140,24 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 		return service_error.ErrCommentNotFound
 	}
 
-	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
-	if rawBaseUserID == nil {
-		return service_error.ErrUserIDNotFoundInContext
-	}
-	str_baseUserID := rawBaseUserID.(string)
-	baseUserID, err := uuid.Parse(str_baseUserID)
-
+	ticket, err := s.ticketRepo.GetByID(ctx, comm.TicketID)
 	if err != nil {
-		return service_error.ErrCommonParseStrToUUID
+		return err
+	}
+	if ticket == nil {
+		return service_error.ErrTicketNotFound
 	}
 
-	rawRole := ctx.Value("role") // IT MUST BE EXIST!
-	if rawRole == nil {
-		return service_error.ErrUserRoleNotFoundInContext
-	}
-	str_role := rawRole.(string)
-	role := entity.UserRole(str_role)
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isResident := tokenKeys.GetRole() == entity.RoleResident
+	isManger := tokenKeys.GetRole() == entity.RoleManager
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
+	isYourComment := comm.UserID != nil && tokenKeys.GetUserID() == *comm.UserID
+	isNotClosedTicket := ticket.Status != entity.TicketClosed
 
-	if (comm.UserID == nil || *comm.UserID != baseUserID) && role == entity.RoleResident {
+	cond_authz := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && isYourComment)
+	cond := cond_authz && isNotClosedTicket
+	if !cond {
 		return service_error.ErrCommentUnauthorizedAccess
 	}
 
@@ -175,7 +171,7 @@ func (s *commentService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error) {
+func (s *commentService) GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.CommentResponseWithAllRelations, error) {
 	comm, err := s.commentRepo.GetWithTicket(ctx, id)
 	if err != nil {
 		return nil, err
@@ -183,23 +179,25 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Commen
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
-	if rawBaseUserID == nil {
-		return nil, service_error.ErrUserIDNotFoundInContext
-	}
-	str_baseUserID := rawBaseUserID.(string)
-	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	ticket, err := s.ticketRepo.GetByID(ctx, comm.TicketID)
 	if err != nil {
-		return nil, service_error.ErrCommonParseStrToUUID
+		return nil, err
+	}
+	if ticket == nil {
+		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawRole := ctx.Value("role") // IT MUST BE EXIST!
-	if rawRole == nil {
-		return nil, service_error.ErrUserRoleNotFoundInContext
-	}
-	str_role := rawRole.(string)
-	role := entity.UserRole(str_role)
-	if comm.Ticket.Accessibility == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isResident := tokenKeys.GetRole() == entity.RoleResident
+	isManger := tokenKeys.GetRole() == entity.RoleManager
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
+	isTicketPublic := ticket.Accessibility == entity.PublicTicket
+	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
+
+	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+
+	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 
@@ -218,7 +216,7 @@ func (s *commentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Commen
 	}, nil
 }
 
-func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uuid.UUID) (*int, error) {
+func (s *commentService) GetLastOrderByTicketID(ctx context.Context, tokenKeys *dto.TokenKeys, ticketID uuid.UUID) (*int, error) {
 	comm, err := s.commentRepo.GetWithTicket(ctx, ticketID)
 	if err != nil {
 		return nil, err
@@ -226,23 +224,24 @@ func (s *commentService) GetLastOrderByTicketID(ctx context.Context, ticketID uu
 	if comm == nil {
 		return nil, service_error.ErrTicketOfCommentOrCommentNotFound
 	}
-	rawBaseUserID := ctx.Value(constant.UserIDKeyToken) // IT MUST BE EXIST!
-	if rawBaseUserID == nil {
-		return nil, service_error.ErrUserIDNotFoundInContext
-	}
-	str_baseUserID := rawBaseUserID.(string)
-	baseUserID, err := uuid.Parse(str_baseUserID)
+
+	ticket, err := s.ticketRepo.GetByID(ctx, comm.TicketID)
 	if err != nil {
-		return nil, service_error.ErrCommonParseStrToUUID
+		return nil, err
+	}
+	if ticket == nil {
+		return nil, service_error.ErrTicketNotFound
 	}
 
-	rawRole := ctx.Value("role") // IT MUST BE EXIST!
-	if rawRole == nil {
-		return nil, service_error.ErrUserRoleNotFoundInContext
-	}
-	str_role := rawRole.(string)
-	role := entity.UserRole(str_role)
-	if comm.Ticket.Accessibility == entity.PrivateTicket && (comm.Ticket.UserID == nil || *comm.Ticket.UserID != baseUserID) && role == entity.RoleResident {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isResident := tokenKeys.GetRole() == entity.RoleResident
+	isManger := tokenKeys.GetRole() == entity.RoleManager
+	isNotForeignApartment := tokenKeys.GetApartmentID() == ticket.ApartmentID // TODO : WARNING!!!!!!
+	isTicketPublic := ticket.Accessibility == entity.PublicTicket
+	isYourTicket := ticket.UserID != nil && tokenKeys.GetUserID() == *ticket.UserID
+
+	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment && (isTicketPublic || isYourTicket))
+	if !cond {
 		return nil, service_error.ErrCommentUnauthorizedAccess
 	}
 

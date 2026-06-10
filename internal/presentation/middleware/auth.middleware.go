@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"apartment-manager-backend/internal/constant"
+	"apartment-manager-backend/internal/domain/constant"
 	"apartment-manager-backend/internal/domain/jwt"
 	"apartment-manager-backend/pkg/response"
 	"net/http"
@@ -44,11 +44,13 @@ func AuthMiddleware(tokenService jwt.TokenServiceInterface) gin.HandlerFunc {
 		//TODO : declare const variable name instead of these static values
 		c.Set(constant.UserIDKeyToken, claims.UserID.String())
 		c.Set(constant.RoleKeyToken, claims.Role)
+		// log.Println(claims.ApartmentID == nil, "*/*/*")
+		// log.Println(claims.ApartmentID, "*/*/*")
+		c.Set(constant.HasApartment, true) // TODO : Problem : if aparID == nil then how to recogize state of aparIDnotdfound with it has not any aparID ?!
 
 		if claims.ApartmentID != nil {
 			c.Set(constant.ApartmentIDKeyToken, claims.ApartmentID.String())
 		}
-
 
 		c.Next()
 	}

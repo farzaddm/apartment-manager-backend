@@ -5,8 +5,17 @@
 
 -- 1. Insert 1 Apartment
 INSERT INTO apartments (id, name, province, city, address, postal_code)
-VALUES (
+VALUES 
+(
     'a0000000-0000-0000-0000-000000000000', 
+    'Grand Horizon Luxury Apartments', 
+    'Ontario', 
+    'Toronto', 
+    '123 Skyview Avenue, Suite 100', 
+    'M5V 2T6'
+),
+(
+    'c0000000-0000-0000-0000-000000000000', 
     'Grand Horizon Luxury Apartments', 
     'Ontario', 
     'Toronto', 
@@ -64,43 +73,87 @@ VALUES
 ('55555555-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', NULL, '301', 3),
 ('66666666-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', NULL, '302', 3);
 
--- 4. Insert Tickets (6 maintenance/complaint tickets)
+-- 4. Insert Tickets 
 INSERT INTO tickets (id, user_id, title, description, body, category, status)
-VALUES 
+VALUES
 (
     '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333',
     'Leaking Kitchen Sink', 'Water dripping under sink', 'The pipe underneath the kitchen sink has a slow drip.', 'plumbing', 'open'
 ),
 (
     '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444',
-    'AC Not Cooling', 'AC blowing warm air', 'AC fan works but air is not cold. High temperature in room.', 'maintenance', 'in-progress'
+    'AC Not Cooling', 'AC blowing warm air', 'AC fan works but air is not cold. High temperature in room.', 'maintenance', 'open'
 ),
 (
     '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555',
-    'Broken Front Door Lock', 'Electronic keypad failing', 'Keypad takes 4-5 tries to recognize code.', 'security', 'open'
+    'Broken Front Door Lock', 'Electronic keypad failing', 'Keypad takes 4-5 tries to recognize code.', 'security', 'in-progress'
 ),
 (
     '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666',
-    'Loud Noise Complaint', 'Neighbor playing bass late at night', 'Unit 201 has been playing heavy electronic music past 11 PM.', 'other', 'closed'
+    'Loud Noise Complaint', 'Neighbor playing bass late at night', 'Unit 201 has been playing heavy electronic music past 11 PM.', 'other', 'in-progress'
 ),
 (
     '55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333',
-    'Gym Equipment Broken', 'Treadmill #2 belt loose', 'The treadmill closest to the window slips when running.', 'maintenance', 'open'
+    'Gym Equipment Broken', 'Treadmill #2 belt loose', 'The treadmill closest to the window slips when running.', 'maintenance', 'closed'
 ),
 (
     '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444',
     'Light Bulb Replacement', 'Hallway light flickers', 'The light outside my door is flickering constantly.', 'electricity', 'closed'
+),
+(
+    '77777777-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555',
+    'Elevator Stuck', 'Elevator stopped between floors', 'The main elevator stopped briefly between floor 3 and 4 before restarting.', 'maintenance', 'closed'
+),
+(
+    '88888888-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666',
+    'Water Pressure Low', 'Shower pressure weak', 'Water pressure in the bathroom shower has become very weak.', 'plumbing', 'open'
+),
+(
+    '99999999-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-3333-3333-3333-333333333333',
+    'Parking Spot Occupied', 'Unauthorized vehicle in my spot', 'Someone parked in my assigned parking space overnight.', 'security', 'in-progress'
+),
+(
+    'aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '44444444-4444-4444-4444-444444444444',
+    'Internet Connectivity Issue', 'Building WiFi unstable', 'Connection keeps dropping every few minutes.', 'maintenance', 'open'
+),
+(
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555',
+    'Garbage Room Smell', 'Strong odor near trash room', 'There is a strong smell coming from the garbage disposal room.', 'other', 'open'
 );
 
--- 5. Insert Comments (6 comments on the tickets)
+-- 5. Insert Comments
 INSERT INTO comments (id, user_id, ticket_id, body, committed_order)
-VALUES 
+VALUES
 ('11111111-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'HVAC technician has been scheduled for tomorrow morning.', 1),
 ('22222222-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Thanks for the quick response!', 2),
 ('33333333-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Spoke to the resident. Issue should be resolved.', 1),
 ('44444444-cccc-cccc-cccc-cccccccccccc', '66666666-6666-6666-6666-666666666666', '44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Confirmed, it is quiet now. Thank you.', 2),
 ('55555555-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Bulb replaced by building super.', 1),
-('66666666-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Plumber is looking at this on Thursday.', 1);
+('66666666-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Plumber is looking at this on Thursday.', 1),
+
+('77777777-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'The leak seems worse today, water collecting under cabinet.', 2),
+('88888888-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Maintenance confirmed pipe gasket needs replacement.', 3),
+
+('99999999-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', '33333333-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Lock sometimes refuses to accept code.', 1),
+
+('aaaaaaaa-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '55555555-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Maintenance team will inspect treadmill tomorrow.', 1),
+
+('bbbbbbbb-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', '66666666-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Light flickering again after replacement.', 2),
+
+('cccccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '77777777-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Technician inspected the elevator system.', 1),
+('dddddddd-cccc-cccc-cccc-cccccccccccc', '55555555-5555-5555-5555-555555555555', '77777777-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'It seems to be working now but please monitor.', 2),
+
+('eeeeeeee-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '88888888-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Pressure regulator might need adjustment.', 1),
+('ffffffff-cccc-cccc-cccc-cccccccccccc', '66666666-6666-6666-6666-666666666666', '88888888-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Confirmed low pressure mostly during evening.', 2),
+
+('12121212-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', '99999999-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Security will review camera footage.', 1),
+('13131313-cccc-cccc-cccc-cccccccccccc', '33333333-3333-3333-3333-333333333333', '99999999-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Vehicle moved this morning.', 2),
+
+('14141414-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Network router will be restarted tonight.', 1),
+('15151515-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', 'aaaaaaaa-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Connection seems stable now.', 2),
+
+('16161616-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Cleaning staff scheduled for deep cleaning.', 1),
+('17171717-cccc-cccc-cccc-cccccccccccc', '55555555-5555-5555-5555-555555555555', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Smell reduced after cleaning.', 2);
 
 -- 6. Insert Tags (6 tags)
 INSERT INTO tags (id, name)
