@@ -169,5 +169,5 @@ func (u *UserController) CheckPhoneNumber(c *gin.Context) {
 		return
 	}
 
-	response.Success(c, http.StatusOK, "profile_updated_successfully", ex)
+	response.Success(c, http.StatusOK, "fetched_phone_number_successfully", ex)
 }

@@ -212,11 +212,15 @@ func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UU
 }
 
 func (r *apartmentRepository) GetWithTickets(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
-	var apartment entity.Apartment
 
+	var apartment entity.Apartment
 	err := r.db.WithContext(ctx).
 		Preload("Tickets", func(db *gorm.DB) *gorm.DB {
 			return db.Order("tickets.created_at ASC")
+		}).
+		Preload("Tickets.Tags").
+		Preload("Tickets.Tags.Tag", func(db *gorm.DB) *gorm.DB {
+			return db.Order("tags.name ASC")
 		}).
 		First(&apartment, "id = ?", id).
 		Error
