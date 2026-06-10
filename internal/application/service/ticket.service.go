@@ -48,7 +48,7 @@ func (s *ticketService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, re
 	// }
 	tempUserID := tokenKeys.GetUserID()
 	tempAparID := tokenKeys.GetApartmentID()
-	if tempAparID == constant.NilApartmentIDKeyToken && tokenKeys.GetRole() != entity.RoleAdmin {
+	if tempAparID == constant.NilApartmentIDKeyToken /*&& tokenKeys.GetRole() != entity.RoleAdmin*/ {
 		return nil, service_error.ErrTicketUnauthorizedAccess
 	}
 	ticket := &entity.Ticket{
