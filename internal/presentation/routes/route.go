@@ -62,7 +62,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		managementGroup := protected.Group("/")
 		managementGroup.Use(middleware.RolesAuthorize("admin", "manager"))
 
-		SetUpApartmentRoutes(protected, adminOnly, handler.Apartment)
+		SetUpApartmentRoutes(protected,managementGroup, adminOnly, handler.Apartment)
 		SetUpTicketRoutes(protected, managementGroup, handler.Ticket)
 		SetUpCommentRoutes(protected, handler.Comment)
 		SetUpUnitRoutes(managementGroup, handler.Unit)

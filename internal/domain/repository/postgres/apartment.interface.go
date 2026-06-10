@@ -21,6 +21,7 @@ type ApartmentInterface interface {
 	GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
 	GetWithRules(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
 	GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
+	GetWithTickets(ctx context.Context, id uuid.UUID) (*entity.Apartment, error)
 
 	List(ctx context.Context) ([]entity.Apartment, error)
 

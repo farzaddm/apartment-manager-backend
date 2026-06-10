@@ -119,3 +119,11 @@ func MapTicketsToSliceResponseWithCount(items []domainRepo.TicketWithCommentCoun
 
 	return responses
 }
+
+func MapTicketToSliceResponse(tickets []entity.Ticket) []TicketBaseResponse {
+	responses := make([]TicketBaseResponse, len(tickets))
+	for i, ticket := range tickets {
+		responses[i] = *MapTicketToBaseResponse(&ticket)
+	}
+	return responses
+}

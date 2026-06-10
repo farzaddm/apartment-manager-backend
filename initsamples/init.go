@@ -93,7 +93,7 @@ func CreateOrOverWriteManagersAndAdminAndResident(db *gorm.DB, passwordHasher *h
 		},
 		{
 			BaseModel:   entity.BaseModel{ID: u6},
-			ApartmentID: &aptID2,
+			ApartmentID: nil,
 			FirstName:   "Voldemort2",
 			LastName:    "VoldemortianAdmin2",
 			Username:    "voldemort_ad2",

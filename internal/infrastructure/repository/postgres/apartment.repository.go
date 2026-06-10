@@ -211,6 +211,29 @@ func (r *apartmentRepository) GetWithInviteCodes(ctx context.Context, id uuid.UU
 	return &apartment, nil
 }
 
+func (r *apartmentRepository) GetWithTickets(ctx context.Context, id uuid.UUID) (*entity.Apartment, error) {
+
+	var apartment entity.Apartment
+	err := r.db.WithContext(ctx).
+		Preload("Tickets", func(db *gorm.DB) *gorm.DB {
+			return db.Order("tickets.created_at ASC")
+		}).
+		Preload("Tickets.Tags").
+		Preload("Tickets.Tags.Tag", func(db *gorm.DB) *gorm.DB {
+			return db.Order("tags.name ASC")
+		}).
+		First(&apartment, "id = ?", id).
+		Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &apartment, nil
+}
+
 // /////////////////// LIST / //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// //////////////////// ///////////////////
 func (r *apartmentRepository) List(ctx context.Context) ([]entity.Apartment, error) {
 	var apartments []entity.Apartment

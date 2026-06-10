@@ -53,6 +53,11 @@ type ApartmentResponseWithInviteCodes struct {
 	InviteCodes []InviteCodeResponse `json:"invite_codes"`
 }
 
+type ApartmentResponseWithTickets struct {
+	ApartmentResponse
+	Tickets []TicketBaseResponse `json:"tickets"`
+}
+
 func MapApartmentToResponse(apartment *entity.Apartment) *ApartmentResponse {
 	if apartment == nil {
 		return nil
