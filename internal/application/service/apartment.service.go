@@ -13,18 +13,19 @@ import (
 )
 
 type ApartmentService interface {
-	Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error)
-	Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error)
-	Delete(ctx context.Context, id uuid.UUID) error
-	Exists(ctx context.Context, id uuid.UUID) (bool, error)
+	Create(ctx context.Context, tokenKeys *dto.TokenKeys, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error)
+	Update(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error)
+	Delete(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) error
+	Exists(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (bool, error)
 
-	GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error)
+	GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error)
 	// GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error)
 
-	GetWithUsers(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error)
-	GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error)
-	GetWithRules(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithRules, error)
-	GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error)
+	GetWithUsers(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error)
+	GetWithAnnouncements(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error)
+	GetWithRules(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithRules, error)
+	GetWithInviteCodes(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error)
+	GetWithTickets(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithTickets, error)
 
 	// List(ctx context.Context) ([]entity.Apartment, error)
 
@@ -44,7 +45,8 @@ func NewApartmentService(apartmentRepo domainRepo.ApartmentInterface) ApartmentS
 	return &apartmentService{apartmentRepo: apartmentRepo}
 }
 
-func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error) {
+func (s *apartmentService) Create(ctx context.Context, tokenKeys *dto.TokenKeys, req *dto.CreateApartmentRequest) (*dto.CreateApartmentResponse, error) {
+
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -69,7 +71,7 @@ func (s *apartmentService) Create(ctx context.Context, req *dto.CreateApartmentR
 	}, nil
 }
 
-func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error) {
+func (s *apartmentService) Update(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID, req *dto.UpdateApartmentRequest) (*dto.ApartmentResponse, error) {
 	apartment := &entity.Apartment{
 		Name:       req.Name,
 		Province:   req.Province,
@@ -88,7 +90,7 @@ func (s *apartmentService) Update(ctx context.Context, id uuid.UUID, req *dto.Up
 	return dto.MapApartmentToResponse(apar), nil
 }
 
-func (s *apartmentService) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *apartmentService) Delete(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) error {
 	err := s.apartmentRepo.Delete(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -100,7 +102,7 @@ func (s *apartmentService) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
+func (s *apartmentService) Exists(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (bool, error) {
 	exists, err := s.apartmentRepo.Exists(ctx, id)
 	if err != nil {
 		return false, err
@@ -108,7 +110,16 @@ func (s *apartmentService) Exists(ctx context.Context, id uuid.UUID) (bool, erro
 	return *exists, nil
 }
 
-func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error) {
+func (s *apartmentService) GetByID(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithUsersOfUnits, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id
+
+	cond := isAdmin || (!isAdmin && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
 	apartment, err := s.apartmentRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -124,7 +135,7 @@ func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Apar
 	}, nil
 }
 
-// func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
+/* func (s *apartmentService) GetByIDWithRelations(ctx context.Context, id uuid.UUID, relations ...string) (*entity.Apartment, error) {
 // 	apartment, err := s.apartmentRepo.GetByIDWithRelations(ctx, id, relations...)
 // 	if err != nil {
 // 		return nil, err
@@ -134,10 +145,20 @@ func (s *apartmentService) GetByID(ctx context.Context, id uuid.UUID) (*dto.Apar
 // 		return nil, service_error.ErrApartmentNotFound
 // 	}
 
-// 	return apartment, nil
-// }
+//		return apartment, nil
+//	}
+*/
 
-func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error) {
+func (s *apartmentService) GetWithUsers(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithUsers, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id
+
+	cond := isAdmin || (!isAdmin && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
 	apartment, err := s.apartmentRepo.GetWithUsers(ctx, id)
 	if err != nil {
 		return nil, err
@@ -153,7 +174,16 @@ func (s *apartmentService) GetWithUsers(ctx context.Context, id uuid.UUID) (*dto
 	}, nil
 }
 
-func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error) {
+func (s *apartmentService) GetWithAnnouncements(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithAnnouncements, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id
+
+	cond := isAdmin || (!isAdmin && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
 	apartment, err := s.apartmentRepo.GetWithAnnouncements(ctx, id)
 	if err != nil {
 		return nil, err
@@ -169,7 +199,16 @@ func (s *apartmentService) GetWithAnnouncements(ctx context.Context, id uuid.UUI
 	}, nil
 }
 
-func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithRules, error) {
+func (s *apartmentService) GetWithRules(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithRules, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id
+
+	cond := isAdmin || (!isAdmin && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
 	apartment, err := s.apartmentRepo.GetWithRules(ctx, id)
 	if err != nil {
 		return nil, err
@@ -185,7 +224,18 @@ func (s *apartmentService) GetWithRules(ctx context.Context, id uuid.UUID) (*dto
 	}, nil
 }
 
-func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error) {
+func (s *apartmentService) GetWithInviteCodes(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithInviteCodes, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isManger := tokenKeys.GetRole() == entity.RoleManager
+	isResident := tokenKeys.GetRole() == entity.RoleResident
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id // TODO : WARNING!!!!!!
+
+	cond := isAdmin || (isManger && isNotForeignApartment) || (isResident && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
 	apartment, err := s.apartmentRepo.GetWithInviteCodes(ctx, id)
 	if err != nil {
 		return nil, err
@@ -198,6 +248,31 @@ func (s *apartmentService) GetWithInviteCodes(ctx context.Context, id uuid.UUID)
 	return &dto.ApartmentResponseWithInviteCodes{
 		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
 		InviteCodes:       dto.MapInviteCodesToSliceResponse(apartment.InviteCodes),
+	}, nil
+}
+
+func (s *apartmentService) GetWithTickets(ctx context.Context, tokenKeys *dto.TokenKeys, id uuid.UUID) (*dto.ApartmentResponseWithTickets, error) {
+	isAdmin := tokenKeys.GetRole() == entity.RoleAdmin
+	isNotForeignApartment := tokenKeys.GetApartmentID() == id
+
+	cond := isAdmin || (!isAdmin && isNotForeignApartment)
+
+	if !cond {
+		return nil, service_error.ErrApartmentUnauthorizedAccess
+	}
+
+	apartment, err := s.apartmentRepo.GetWithTickets(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if apartment == nil {
+		return nil, service_error.ErrApartmentNotFound
+	}
+
+	return &dto.ApartmentResponseWithTickets{
+		ApartmentResponse: *dto.MapApartmentToResponse(apartment),
+		Tickets:           dto.MapTicketToSliceResponse(apartment.Tickets),
 	}, nil
 }
 
