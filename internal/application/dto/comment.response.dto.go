@@ -51,6 +51,7 @@ func MapCommentToResponse(comment *entity.Comment) *CommentResponse {
 		TicketID:       comment.TicketID,
 		Body:           comment.Body,
 		CommittedOrder: comment.CommittedOrder,
+		CreatedAt:      comment.CreatedAt,
 	}
 }
 
