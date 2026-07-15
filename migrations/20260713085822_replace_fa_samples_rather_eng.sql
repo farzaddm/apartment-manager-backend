@@ -83,10 +83,27 @@ VALUES
 -- 3. واحدها (Units)
 INSERT INTO units (id, apartment_id, user_id, unit_number, floor)
 VALUES 
+-- Dedicated Management Spaces (Fixes the "no units" problem)
+('00000000-eeee-eeee-eeee-111111111111', 'a0000000-0000-0000-0000-000000000000', '11111111-1111-1111-1111-111111111111', 'دفتر مدیریت', 0), -- Alireza Admin
+('00000000-eeee-eeee-eeee-222222222222', 'a0000000-0000-0000-0000-000000000000', '22222222-2222-2222-2222-222222222222', 'اتاق سرپرستی', 0), -- Babak Manager
+
+-- Apartment A Occupied Units
 ('11111111-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', '33333333-3333-3333-3333-333333333333', '101', 1),
 ('22222222-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', '44444444-4444-4444-4444-444444444444', '102', 1),
 ('33333333-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', '55555555-5555-5555-5555-555555555555', '201', 2),
-('44444444-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', '66666666-6666-6666-6666-666666666666', '202', 2);
+('44444444-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', '66666666-6666-6666-6666-666666666666', '202', 2),
+
+-- Apartment A Vacant Units (Required by Invite Codes block)
+('55555555-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', NULL, '301', 3),
+('66666666-eeee-eeee-eeee-eeeeeeeeeeee', 'a0000000-0000-0000-0000-000000000000', NULL, '302', 3),
+
+-- Apartment C Vacant Units (Required by Invite Codes block)
+('11111113-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '101', 1),
+('22222224-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '102', 1),
+('33333335-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '201', 2),
+('44444446-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '202', 2),
+('55555557-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '301', 3),
+('66666668-eeee-eeee-eeee-eeeeeeeeeeee', 'c0000000-0000-0000-0000-000000000000', NULL, '302', 3);
 
 -- 4. تیکت‌ها (Tickets) - ستون apartment_id برای حل ارور اضافه شد
 INSERT INTO tickets (id, apartment_id, user_id, title, description, body, category, status)
@@ -269,12 +286,11 @@ VALUES
 -- 9. کدهای دعوت (Invite Codes)
 INSERT INTO invite_codes (id, apartment_id, unit_id, code, expires_at)
 VALUES 
-('11111111-9999-9999-9999-999999999991', 'a0000000-0000-0000-0000-000000000000', '55555555-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-301-WELCOME', NOW() + INTERVAL '30 days'),
-('11111111-9999-9999-9999-999999999992', 'a0000000-0000-0000-0000-000000000000', '66666666-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-302-WELCOME', NOW() + INTERVAL '30 days'),
 ('11111111-9999-9999-9999-999999999993', 'a0000000-0000-0000-0000-000000000000', '11111111-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-EXPIRED-99', NOW() - INTERVAL '1 day'),
 ('11111111-9999-9999-9999-999999999994', 'a0000000-0000-0000-0000-000000000000', '22222222-eeee-eeee-eeee-eeeeeeeeeeee', 'CODE-ALPHA-444', NOW() + INTERVAL '10 days'),
 ('11111111-9999-9999-9999-999999999995', 'a0000000-0000-0000-0000-000000000000', '33333333-eeee-eeee-eeee-eeeeeeeeeeee', 'CODE-BETA-555',  NOW() + INTERVAL '15 days'),
 ('11111111-9999-9999-9999-999999999996', 'a0000000-0000-0000-0000-000000000000', '44444444-eeee-eeee-eeee-eeeeeeeeeeee', 'CODE-GAMMA-666', NOW() + INTERVAL '20 days'),
+
 ('11111112-9999-9999-9999-999999999991', 'c0000000-0000-0000-0000-000000000000', '55555557-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-30D-WELCOME', NOW() + INTERVAL '30 days'),
 ('11111112-9999-9999-9999-999999999992', 'c0000000-0000-0000-0000-000000000000', '66666668-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-3Q2-WELCOME', NOW() + INTERVAL '30 days'),
 ('11111112-9999-9999-9999-999999999993', 'c0000000-0000-0000-0000-000000000000', '11111113-eeee-eeee-eeee-eeeeeeeeeeee', 'INV-ERPIRED-99', NOW() - INTERVAL '12 day'),
