@@ -296,7 +296,13 @@ func (s *AuthService) RefreshToken(ctx context.Context, input dto.RefreshInput) 
 		return nil, errors.New("session_expired_or_revoked")
 	}
 
-	newAccessToken, err := s.tokenService.GenerateAccessToken(claims.UserID, claims.Role, claims.ApartmentID)
+	apartmentID := claims.ApartmentID
+
+	if user, _, err := s.userRepo.GetById(ctx, claims.UserID.String()); err == nil && user != nil {
+		apartmentID = user.ApartmentID
+	}
+
+	newAccessToken, err := s.tokenService.GenerateAccessToken(claims.UserID, claims.Role, apartmentID)
 	if err != nil {
 		return nil, err
 	}
