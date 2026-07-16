@@ -62,7 +62,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 		managementGroup := protected.Group("/")
 		managementGroup.Use(middleware.RolesAuthorize("admin", "manager"))
 
-		SetUpApartmentRoutes(protected,managementGroup, adminOnly, handler.Apartment)
+		SetUpApartmentRoutes(protected, managementGroup, adminOnly, handler.Apartment)
 		SetUpTicketRoutes(protected, managementGroup, handler.Ticket)
 		SetUpCommentRoutes(protected, handler.Comment)
 		SetUpUnitRoutes(managementGroup, handler.Unit)
@@ -96,7 +96,7 @@ func SetUpRouter(handler *Controllers, jwtSvc jwt.TokenServiceInterface) *gin.En
 func corsMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE , PATCH")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE , PATCH, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if c.Request.Method == "OPTIONS" {
